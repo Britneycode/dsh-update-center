@@ -27,6 +27,7 @@ import { homedir } from 'node:os'
 import { fileURLToPath } from 'node:url'
 import { runCommandAsync } from './run-command.mjs'
 import { parseAwesomeReadme } from './registry-readme.mjs'
+import { mergeGithubTopic } from './github-topic.mjs'
 
 export const name = '@dsh-external/dsh-update-center'
 export const inject = ['tools', 'webServer']
@@ -444,8 +445,12 @@ export function apply(ctx: AppContext, config: Config): void {
   const REGISTRY_MAX_BYTES = 8 * 1024 * 1024
   const REGISTRY_TTL_MS = 24 * 60 * 60 * 1000
   const REGISTRY_REFRESH_INTERVAL_MS = 12 * 60 * 60 * 1000
+  // GitHub topic 扫描：按星标降序取前 500（搜索 API 单次查询上限 1000，
+  // 5 页 × 100 已覆盖主流插件，也留出未认证搜索 10 次/分钟的限额余量）。
+  const GITHUB_TOPIC_MAX_PAGES = 5
   const registryCacheFile = join(updateHome, 'registry-cache.json')
   let registryCache: { at: number; source: string; data: any } | null = null
+  let githubTopicScanRunning = false
 
   function validRegistry(data: any): boolean {
     return !!data && typeof data === 'object' && Array.isArray(data.plugins)
@@ -517,6 +522,63 @@ export function apply(ctx: AppContext, config: Config): void {
     })
   }
 
+  /** GitHub 搜索 API 拉取一页 topic:dsh-plugin 仓库（按星标降序）。
+   * 端点为固定字面量 host（api.github.com）+ 内部整数页码，无外部输入参与。 */
+  async function fetchGithubTopicPage(page: number): Promise<any | null> {
+    const url = new URL('https://api.github.com/search/repositories')
+    url.searchParams.set('q', 'topic:dsh-plugin')
+    url.searchParams.set('sort', 'stars')
+    url.searchParams.set('order', 'desc')
+    url.searchParams.set('per_page', '100')
+    url.searchParams.set('page', String(page))
+    if (url.protocol !== 'https:' || url.hostname !== 'api.github.com') {
+      throw new Error(`GitHub topic 端点校验失败: ${url.host}`)
+    }
+    const controller = new AbortController()
+    const timer = setTimeout(() => controller.abort(), 15_000)
+    try {
+      const response = await fetch(url, { signal: controller.signal, headers: { accept: 'application/vnd.github+json' } })
+      if (response.status === 403 || response.status === 429) return null // 触发限流，停止翻页
+      if (!response.ok) return null
+      return await response.json()
+    } catch {
+      return null
+    } finally {
+      clearTimeout(timer)
+    }
+  }
+
+  /** 扫描 GitHub topic（排除 fork），返回仓库数组；失败/限流返回空数组。 */
+  async function fetchGithubTopicRepos(): Promise<any[]> {
+    const repos: any[] = []
+    for (let page = 1; page <= GITHUB_TOPIC_MAX_PAGES; page++) {
+      const payload = await fetchGithubTopicPage(page)
+      const items = Array.isArray(payload?.items) ? payload.items : null
+      if (!items) break
+      repos.push(...items.filter((repo: any) => repo && repo.fork !== true))
+      if (items.length < 100) break
+    }
+    return repos
+  }
+
+  /** 后台合并 GitHub topic 扫描结果到当前清单缓存（不阻塞任何请求）。 */
+  async function enrichRegistryWithGithubTopics(): Promise<void> {
+    if (githubTopicScanRunning || !registryCache) return
+    githubTopicScanRunning = true
+    try {
+      const repos = await fetchGithubTopicRepos()
+      if (!repos.length) return
+      const { added, starsUpdated } = mergeGithubTopic(registryCache.data, repos)
+      if (!added && !starsUpdated) return
+      try {
+        writeJsonAtomic(registryCacheFile, { fetchedAt: registryCache.at, data: registryCache.data })
+      } catch { /* 写盘失败仅影响下次启动的缓存 */ }
+      logger?.info?.('[%s] GitHub 主题扫描：+%d 新插件，%d 星标刷新（共 %d）', name, added, starsUpdated, registryCache.data.plugins.length)
+    } finally {
+      githubTopicScanRunning = false
+    }
+  }
+
   /** 缓存有效期内直接使用；过期自动拉网（含备源）；网络不可用回退缓存与内置快照。 */
   async function loadRegistry(force: boolean): Promise<{ ok: boolean; source: string; data: any }> {
     if (!force && registryCache) return { ok: true, source: registryCache.source, data: registryCache.data }
@@ -533,6 +595,7 @@ export function apply(ctx: AppContext, config: Config): void {
         writeJsonAtomic(registryCacheFile, { fetchedAt: Date.now(), data: network.data })
       } catch { /* 磁盘缓存写失败不影响内存使用 */ }
       registryCache = { at: Date.now(), source: network.source, data: network.data }
+      void enrichRegistryWithGithubTopics()
       return { ok: true, source: network.source, data: network.data }
     }
     if (diskUsable) {
@@ -785,6 +848,7 @@ export function apply(ctx: AppContext, config: Config): void {
             source: registry.source,
             updated: registry.data.updated ?? '',
             count: registry.data.plugins.length,
+            githubExtra: typeof registry.data.githubExtra === 'number' ? registry.data.githubExtra : 0,
             categories: registry.data.categories ?? {},
             plugins: registry.data.plugins,
             installed,
@@ -802,6 +866,7 @@ export function apply(ctx: AppContext, config: Config): void {
             source: registry.source,
             updated: registry.data.updated ?? '',
             count: registry.data.plugins.length,
+            githubExtra: typeof registry.data.githubExtra === 'number' ? registry.data.githubExtra : 0,
             categories: registry.data.categories ?? {},
             plugins: registry.data.plugins,
             installed,
@@ -965,6 +1030,7 @@ export function apply(ctx: AppContext, config: Config): void {
         } catch { /* 写盘失败仅影响下次启动的缓存 */ }
         registryCache = { at: Date.now(), source: fetched.source, data: fetched.data }
         logger?.info?.('[%s] 市场清单已自动刷新（source=%s, count=%s）', name, fetched.source, fetched.data?.count ?? '?')
+        void enrichRegistryWithGithubTopics()
       })
     }, REGISTRY_REFRESH_INTERVAL_MS)
     return () => clearInterval(timer)

@@ -1,6 +1,6 @@
 {
   "name": "@dsh-external/dsh-update-center",
-  "version": "0.4.0",
+  "version": "0.5.0",
   "description": "更新中心：插件市场（安装/卸载/禁用）+ 一键全部更新 + 已装插件管理 + dsh 本体更新",
   "private": true,
   "type": "module",
@@ -29,7 +29,7 @@
     "build": "node scripts/build.mjs --all",
     "typecheck": "node scripts/build.mjs --typecheck",
     "build:client": "node scripts/build.mjs --client",
-    "test": "node --test tests/update-worker.test.mjs tests/registry-readme.test.mjs",
+    "test": "node --test tests/update-worker.test.mjs tests/registry-readme.test.mjs tests/github-topic.test.mjs",
     "test:launcher": "powershell -NoProfile -ExecutionPolicy Bypass -File tests/launcher-job-guard.test.ps1"
   },
   "exports": {
