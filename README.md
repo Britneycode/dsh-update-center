@@ -20,8 +20,9 @@ dsh plugin --profile web add link:<本插件目录>
 
 ## 插件市场
 
-- 数据源：awesome-dsh-plugin.com 官方清单（每日 CI 刷新），拉取失败时回退磁盘缓存与内置快照（`data/registry-snapshot.json`）。
-- 出网请求仅允许 https 且 host 白名单（防 SSRF）；安装目标只接受清单内条目，不接受任意包名。
+- 数据源：awesome-dsh-plugin.com 官方清单（GitHub 仓库每日 CI 产出）；站点不可用时自动降级解析 GitHub 仓库的 README 策展清单（字段较少但可浏览可安装），再回退磁盘缓存与内置快照（`data/registry-snapshot.json`）。
+- 清单自动刷新：缓存超过 24 小时会在打开面板时自动拉取最新；后台每 12 小时静默刷新一次；「刷新清单」按钮随时强制更新。
+- 出网请求仅允许 https 且 host 白名单（raw.githubusercontent.com 额外限定为清单仓库路径，防 SSRF）；安装目标只接受清单内条目，不接受任意包名。
 - 安装优先走 npm 包（秒级），并做防抢注校验：npm 包的 repository 与清单 GitHub owner/repo 不一致时自动回退 `github:owner/repo`。
 - 安装后校验包可解析且存在可运行入口（dsh 清单或 main 文件）；校验失败自动回滚卸载，不会留下坏包。
 - pnpm ≥10 拒绝或跳过构建脚本时，错误信息会带 pnpm-workspace.yaml 放行指引。

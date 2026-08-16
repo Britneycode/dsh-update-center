@@ -506,7 +506,7 @@ function buildPanel(): HTMLElement {
     } else if (marketSort === 'added') {
       filtered.sort((a, b) => (Date.parse(String(b.added ?? '')) || 0) - (Date.parse(String(a.added ?? '')) || 0))
     }
-    const sourceLabel = { network: 'awesome-dsh-plugin.com', disk: '本地缓存', snapshot: '内置快照' }[String(marketData.source)] ?? marketData.source
+    const sourceLabel = { network: 'awesome-dsh-plugin.com', github: 'GitHub 清单（降级）', disk: '本地缓存', snapshot: '内置快照' }[String(marketData.source)] ?? marketData.source
     marketMeta.textContent = `来源：${sourceLabel} · 清单更新 ${String(marketData.updated || '未知')} · 共 ${plugins.length} 个，筛选出 ${filtered.length} 个${filtered.length > 300 ? '（仅显示前 300）' : ''}`
     if (!filtered.length) {
       marketList.append(el('li', 'uc-empty', '没有匹配的插件'))

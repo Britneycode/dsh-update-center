@@ -92,7 +92,9 @@ if (mode === '--typecheck') {
   runNode(tsc, ['-p', 'tsconfig.json'])
   runNode(tsdown, [])
   // host 产物由 tsc 逐文件转译（不打包），共享的 .mjs 模块需随产物分发。
-  copyFileSync(join(root, 'src', 'run-command.mjs'), join(root, 'lib', 'run-command.mjs'))
+  for (const shared of ['run-command.mjs', 'registry-readme.mjs']) {
+    copyFileSync(join(root, 'src', shared), join(root, 'lib', shared))
+  }
 } else {
   console.error(`build: unknown mode ${mode}`)
   process.exit(2)
