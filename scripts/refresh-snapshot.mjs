@@ -1,13 +1,14 @@
 /**
- * 重新生成随包分发的市场清单快照（纯 GitHub 数据源）：
- *   data/registry-snapshot.json —— GitHub topic:dsh-plugin 星标前 500（排除
- *     fork）+ 本插件自身，作为离线兜底数据源；
- *   data/extra-plugins.json —— 常驻条目（GitHub repo 形状，加载时无条件合并，
- *     保证 0 星的新插件不出现在扫描窗口时市场里仍然可见）。
+ * 维护本仓库根目录的 plugins.json 注册表（像 awesome-dsh-plugin 一样对外提供）：
+ *   plugins.json —— 已有注册表（若存在）作为基底累计合并 GitHub topic:dsh-plugin
+ *     星标前 500（排除 fork）+ 本插件自身，按 owner/name 去重：掉出扫描窗口
+ *     的老条目保留，新条目追加，已知条目刷新星标。
+ *   data/registry-snapshot.json —— 同一份数据的随包离线快照。
+ *   data/extra-plugins.json —— 常驻条目（加载时无条件合并，保证 0 星新插件可见）。
  *
  * 运行：npm run refresh:snapshot（需网络可达 api.github.com）
  */
-import { writeFile } from 'node:fs/promises'
+import { readFile, writeFile } from 'node:fs/promises'
 import { dirname, join } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { buildRegistryFromRepos, mergeGithubTopic } from '../src/github-topic.mjs'
@@ -15,6 +16,7 @@ import { buildRegistryFromRepos, mergeGithubTopic } from '../src/github-topic.mj
 const root = join(dirname(fileURLToPath(import.meta.url)), '..')
 const SELF_REPO = 'Britneycode/dsh-update-center'
 const TOPIC_PAGES = 5
+const MAX_ENTRIES = 2000
 
 async function fetchJson(url) {
   const response = await fetch(url, { headers: { accept: 'application/vnd.github+json' } })
@@ -40,22 +42,32 @@ async function fetchGithubTopicRepos() {
   return repos
 }
 
+async function loadExistingRegistry() {
+  try {
+    const data = JSON.parse(await readFile(join(root, 'plugins.json'), 'utf8'))
+    if (Array.isArray(data?.plugins) && data.plugins.length) return data
+  } catch { /* 首次生成时没有存量 */ }
+  return null
+}
+
 const topicRepos = await fetchGithubTopicRepos()
 if (!topicRepos.length) throw new Error('GitHub topic scan returned nothing')
 const selfRepo = await fetchJson(`https://api.github.com/repos/${SELF_REPO}`)
 if (!selfRepo?.name) throw new Error('self repo info invalid')
 
-const data = buildRegistryFromRepos(topicRepos)
-mergeGithubTopic(data, [selfRepo])
+const existing = await loadExistingRegistry()
+const data = existing ?? buildRegistryFromRepos(topicRepos)
+const merged = mergeGithubTopic(data, [...topicRepos, selfRepo])
+if (data.plugins.length > MAX_ENTRIES) {
+  data.plugins.sort((a, b) => Number(b.stars ?? 0) - Number(a.stars ?? 0))
+  data.plugins = data.plugins.slice(0, MAX_ENTRIES)
+}
+data.updated = new Date().toISOString().slice(0, 10)
+data.count = data.plugins.length
 
-await writeFile(
-  join(root, 'data', 'registry-snapshot.json'),
-  JSON.stringify(data, null, 1) + '\n',
-  'utf8',
-)
-await writeFile(
-  join(root, 'data', 'extra-plugins.json'),
-  JSON.stringify([selfRepo], null, 1) + '\n',
-  'utf8',
-)
-console.log(`快照已生成：GitHub 主题 ${topicRepos.length} + 本插件 = 共 ${data.plugins.length} 条；常驻条目 1 个`)
+const text = JSON.stringify(data, null, 1) + '\n'
+await writeFile(join(root, 'plugins.json'), text, 'utf8')
+await writeFile(join(root, 'data', 'registry-snapshot.json'), text, 'utf8')
+await writeFile(join(root, 'data', 'extra-plugins.json'), JSON.stringify([selfRepo], null, 1) + '\n', 'utf8')
+const base = existing ? `存量 ${existing.plugins.length}` : '新建'
+console.log(`plugins.json 已生成：${base} + 本轮扫描新增 ${merged.added}（含去重）= 共 ${data.plugins.length} 条（上限 ${MAX_ENTRIES}）`)

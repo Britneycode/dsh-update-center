@@ -20,9 +20,11 @@ dsh plugin --profile web add link:<本插件目录>
 
 ## 插件市场
 
-- 数据源：GitHub 上带 `dsh-plugin` 话题的仓库（按星标降序取前 500，排除 fork），不依赖第三方清单站点；网络不可用时回退磁盘缓存与内置快照（`data/registry-snapshot.json`，用 `npm run refresh:snapshot` 重新生成）。
-- 常驻条目（`data/extra-plugins.json`）无条件并入清单（按 owner/name 去重），保证 0 星的新插件不出现在扫描窗口时市场里仍然可见。
-- 清单自动刷新：缓存超过 24 小时会在打开面板时自动拉取最新；后台每 12 小时静默刷新一次；「刷新清单」按钮随时强制更新。
+- 注册表：本仓库根目录 [`plugins.json`](./plugins.json)（raw 直链拉取，可独立于插件发版更新），初始内容为 GitHub `topic:dsh-plugin` 星标前 500 + 本插件，共 501 条。
+- 增量扫描：后台每 12 小时扫描 GitHub `topic:dsh-plugin`（星标前 500，排除 fork），与注册表按 owner/name 去重合并——重复条目仅刷新星标，新条目追加；掉出扫描窗口的老条目在 plugins.json 中保留（累计语义，上限 2000 防膨胀）。
+- 更新注册表：`npm run refresh:snapshot` 会以现有 plugins.json 为基底累计合并最新扫描结果并连同离线快照一起重写，提交推送后生效。
+- 离线兜底：磁盘缓存 → 随包快照（`data/registry-snapshot.json`）；常驻条目（`data/extra-plugins.json`）无条件并入，保证 0 星新插件始终可见。
+- 清单自动刷新：缓存超过 24 小时会在打开面板时自动拉取最新；「刷新清单」按钮随时强制更新。
 - 出网请求仅允许 https 且 host 白名单（raw.githubusercontent.com 额外限定为清单仓库路径，防 SSRF）；安装目标只接受清单内条目，不接受任意包名。
 - 安装优先走 npm 包（秒级），并做防抢注校验：npm 包的 repository 与清单 GitHub owner/repo 不一致时自动回退 `github:owner/repo`。
 - 安装后校验包可解析且存在可运行入口（dsh 清单或 main 文件）；校验失败自动回滚卸载，不会留下坏包。
