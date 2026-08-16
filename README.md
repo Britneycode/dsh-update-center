@@ -1,10 +1,20 @@
 # dsh-update-center
 
+[![npm version](https://img.shields.io/npm/v/dsh-update-center.svg)](https://www.npmjs.com/package/dsh-update-center)
+
 DeepSeek Harness 的本地更新中心：内置插件市场（浏览/搜索/一键安装/卸载/禁用），统一管理已装插件与 dsh 本体、profile 中的 npm/link 插件以及 agent preset 的更新。
 
 ## 安装
 
-插件声明了 `dsh.bundle`（bundle patch 位于 `cordis.patch.yml`），构建产物随仓库分发，用官方 CLI 安装即可挂载为 profile 层：
+插件声明了 `dsh.bundle`（bundle patch 位于 `cordis.patch.yml`），构建产物随包分发，用官方 CLI 安装即可挂载为 profile 层。
+
+推荐 npm 安装（秒级，无需构建）：
+
+```bash
+dsh plugin --profile web add dsh-update-center
+```
+
+或从 GitHub 安装：
 
 ```bash
 dsh plugin --profile web add github:Britneycode/dsh-update-center
