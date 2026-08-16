@@ -3,7 +3,7 @@
  "url": "https://github.com/search?q=topic%3Adsh-plugin",
  "source": "GitHub topic:dsh-plugin",
  "updated": "2026-08-16",
- "count": 512,
+ "count": 514,
  "categories": {
   "github": {
    "en": "GitHub discovered",
@@ -7690,6 +7690,40 @@
    "stars": 6,
    "install": "dsh plugin --profile web add github:HuanLinOTO/dsh-plugin-interpreters",
    "added": "2026-08-15"
+  },
+  {
+   "name": "dsh-routing-suite",
+   "owner": "yjh051108",
+   "url": "https://github.com/yjh051108/dsh-routing-suite",
+   "page": "",
+   "category": "github",
+   "description": {
+    "en": "dsh-routing-suite — injector + router-standard kit: install the runtime injector first, then the task-aware reasoning-mode router preset (measured P1-P23).",
+    "zh": "注入器、任务感知思维模式路由预设与模式增强插件组成的 DSH 路由套装。"
+   },
+   "npm": null,
+   "stars": 2500,
+   "install": "",
+   "added": "2026-08-16",
+   "installMode": "manual",
+   "manualNote": "该仓库包含 Git submodule，需递归克隆后按 README 运行 install.ps1。"
+  },
+  {
+   "name": "J-Space-Cognition-Suite-V3.6",
+   "owner": "Tiger3807861189",
+   "url": "https://github.com/Tiger3807861189/J-Space-Cognition-Suite-V3.6",
+   "page": "",
+   "category": "github",
+   "description": {
+    "en": "A model-agnostic inference-time control suite for deep reasoning, long-horizon work, tool use, verification, and recovery.",
+    "zh": "面向深度推理、长程任务、工具调用、验证与恢复的模型无关推理时认知控制 Skill 套件。"
+   },
+   "npm": null,
+   "stars": 254,
+   "install": "",
+   "added": "2026-08-16",
+   "installMode": "manual",
+   "manualNote": "该项目以 Skill 目录分发，需完整复制 j-space 目录并按 README 运行校验脚本。"
   }
  ],
  "githubExtra": 4

@@ -75,7 +75,12 @@ if (!selfRepo?.name) throw new Error('self repo info invalid')
 
 const existing = await loadExistingRegistry()
 const data = existing ?? buildRegistryFromRepos(topicRepos)
-const merged = mergeGithubTopic(data, [...topicRepos, selfRepo])
+const bundledExtras = JSON.parse(await readFile(join(root, 'data', 'extra-plugins.json'), 'utf8'))
+const pinnedRepos = [
+  ...bundledExtras.filter((repo) => repo?.full_name !== SELF_REPO),
+  selfRepo,
+]
+const merged = mergeGithubTopic(data, [...topicRepos, ...pinnedRepos])
 const npmObjects = await fetchNpmSearchObjects()
 const mapped = applyNpmMapping(data, npmObjects)
 if (data.plugins.length > MAX_ENTRIES) {
@@ -88,6 +93,6 @@ data.count = data.plugins.length
 const text = JSON.stringify(data, null, 1) + '\n'
 await writeFile(join(root, 'plugins.json'), text, 'utf8')
 await writeFile(join(root, 'data', 'registry-snapshot.json'), text, 'utf8')
-await writeFile(join(root, 'data', 'extra-plugins.json'), JSON.stringify([selfRepo], null, 1) + '\n', 'utf8')
+await writeFile(join(root, 'data', 'extra-plugins.json'), JSON.stringify(pinnedRepos, null, 1) + '\n', 'utf8')
 const base = existing ? `存量 ${existing.plugins.length}` : '新建'
 console.log(`plugins.json 已生成：${base} + 本轮扫描新增 ${merged.added}（含去重）+ npm 映射 ${mapped} = 共 ${data.plugins.length} 条（上限 ${MAX_ENTRIES}）`)

@@ -19,6 +19,7 @@ type BadgeKind = 'ok' | 'warn' | 'err' | 'muted' | 'update'
 export const inject = ['slots']
 
 const API = '/update-center/api'
+const MARKET_PAGE_SIZE = 500
 
 function el<K extends keyof HTMLElementTagNameMap>(tag: K, cls?: string, text?: string): HTMLElementTagNameMap[K] {
   const element = document.createElement(tag)
@@ -73,6 +74,7 @@ const styles = `
 .uc-input{flex:1 1 200px;min-width:160px}
 .uc-select{flex:0 0 auto}
 .uc-market-meta{width:100%;color:var(--dsw-alias-label-tertiary);font-size:11px}
+.uc-load-more{display:flex;justify-content:center;padding:16px 0;border-top:1px solid var(--dsw-alias-border-l2)}
 .uc-msg{margin-top:14px;padding:10px 12px;border-left:3px solid var(--dsw-alias-border-l3);background:var(--dsw-alias-bg-layer-2);white-space:pre-wrap;max-height:260px;overflow:auto;font-size:12px}
 .uc-msg.ok{border-color:#28945a}
 .uc-msg.err{border-color:#d23a3a}
@@ -185,6 +187,7 @@ function buildPanel(): HTMLElement {
   let marketQuery = ''
   let marketCategory = ''
   let marketSort = 'stars'
+  let marketVisibleLimit = MARKET_PAGE_SIZE
   let lastStatusData: any = null
 
   /** 已安装插件里有多少项可更新（用于“全部更新”按钮态）。 */
@@ -507,12 +510,13 @@ function buildPanel(): HTMLElement {
       filtered.sort((a, b) => (Date.parse(String(b.added ?? '')) || 0) - (Date.parse(String(a.added ?? '')) || 0))
     }
     const sourceLabel = { registry: '本仓库 plugins.json', github: 'GitHub topic:dsh-plugin', disk: '本地缓存', snapshot: '内置快照', network: '网络' }[String(marketData.source)] ?? marketData.source
-    marketMeta.textContent = `来源：${sourceLabel} · 扫描于 ${String(marketData.updated || '未知')} · 共 ${plugins.length} 个，筛选出 ${filtered.length} 个${filtered.length > 300 ? '（仅显示前 300）' : ''}`
+    const visibleCount = Math.min(filtered.length, marketVisibleLimit)
+    marketMeta.textContent = `来源：${sourceLabel} · 扫描于 ${String(marketData.updated || '未知')} · 共 ${plugins.length} 个，筛选出 ${filtered.length} 个 · 已显示 ${visibleCount} 个`
     if (!filtered.length) {
       marketList.append(el('li', 'uc-empty', '没有匹配的插件'))
       return
     }
-    for (const entry of filtered.slice(0, 300)) {
+    for (const entry of filtered.slice(0, marketVisibleLimit)) {
       const installed = installedSet.has(String(entry.name)) || (entry.npm && installedSet.has(String(entry.npm)))
       const item = el('li', 'uc-item')
       const identity = el('div')
@@ -527,7 +531,8 @@ function buildPanel(): HTMLElement {
       if (description) identity.append(el('div', 'uc-desc', String(description)))
       const tags = el('div', 'uc-tags')
       if (entry.owner) tags.append(el('span', 'uc-meta', String(entry.owner)))
-      if (entry.npm) tags.append(el('span', 'uc-tag npm', 'npm'))
+      if (entry.installMode === 'manual') tags.append(el('span', 'uc-tag preset', '套装'))
+      else if (entry.npm) tags.append(el('span', 'uc-tag npm', 'npm'))
       else tags.append(el('span', 'uc-tag', 'github'))
       identity.append(tags)
 
@@ -541,7 +546,14 @@ function buildPanel(): HTMLElement {
           || Number(statusPlugin.git?.behind) > 0)
 
       const actions = el('div', 'uc-actions')
-      if (installed) {
+      if (entry.installMode === 'manual') {
+        status.append(badge('手动安装', 'muted'))
+        const guideLink = el('a', 'uc-btn secondary', '安装说明')
+        guideLink.href = String(entry.url)
+        guideLink.target = '_blank'
+        guideLink.rel = 'noreferrer'
+        actions.append(guideLink)
+      } else if (installed) {
         status.append(updatable ? badge('可更新', 'update') : badge('已安装', 'ok'))
         const removeButton = actionButton('卸载', 'danger')
         bindAction(removeButton, '/uninstall', { name: entry.npm || entry.name }, `从 profile 卸载 ${entry.npm || entry.name}？任务完成后再重启，是否继续？`, '正在创建后台卸载任务…')
@@ -554,6 +566,18 @@ function buildPanel(): HTMLElement {
       item.append(identity, status, actions)
       marketList.append(item)
     }
+    if (filtered.length > marketVisibleLimit) {
+      const remaining = filtered.length - marketVisibleLimit
+      const loadMoreItem = el('li', 'uc-load-more')
+      const loadMoreButton = el('button', 'uc-btn secondary', `显示更多（剩余 ${remaining} 个）`)
+      loadMoreButton.type = 'button'
+      loadMoreButton.addEventListener('click', () => {
+        marketVisibleLimit += MARKET_PAGE_SIZE
+        renderMarket()
+      })
+      loadMoreItem.append(loadMoreButton)
+      marketList.append(loadMoreItem)
+    }
   }
 
   async function loadMarket(force: boolean, silent: boolean): Promise<void> {
@@ -563,6 +587,7 @@ function buildPanel(): HTMLElement {
       const data = await fetchJson(force ? '/market/refresh' : '/market')
       if (!data?.ok) throw new Error(data?.error || '清单加载失败')
       marketData = data
+      marketVisibleLimit = MARKET_PAGE_SIZE
       renderCategorySelect()
       renderMarket()
       if (lastStatusData) renderPlugins(lastStatusData.plugins ?? [])
@@ -609,14 +634,17 @@ function buildPanel(): HTMLElement {
   marketTab.addEventListener('click', () => switchTab('market'))
   searchInput.addEventListener('input', () => {
     marketQuery = searchInput.value
+    marketVisibleLimit = MARKET_PAGE_SIZE
     renderMarket()
   })
   categorySelect.addEventListener('change', () => {
     marketCategory = categorySelect.value
+    marketVisibleLimit = MARKET_PAGE_SIZE
     renderMarket()
   })
   sortSelect.addEventListener('change', () => {
     marketSort = sortSelect.value
+    marketVisibleLimit = MARKET_PAGE_SIZE
     renderMarket()
   })
   refreshButton.addEventListener('click', () => void loadMarket(true, false))

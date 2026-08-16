@@ -9,17 +9,25 @@ export function githubRepoToEntry(repo) {
   const owner = repo?.owner?.login ?? ''
   const name = repo?.name ?? ''
   const description = typeof repo?.description === 'string' ? repo.description : ''
+  const manualInstall = repo?.installMode === 'manual'
   return {
     name,
     owner,
     url: typeof repo?.html_url === 'string' ? repo.html_url : `https://github.com/${owner}/${name}`,
     page: '',
     category: 'github',
-    description: { en: description, zh: '' },
+    description: {
+      en: description,
+      zh: typeof repo?.descriptionZh === 'string' ? repo.descriptionZh : '',
+    },
     npm: null,
     stars: Number(repo?.stargazers_count ?? 0),
-    install: owner && name ? `dsh plugin --profile web add github:${owner}/${name}` : '',
+    install: !manualInstall && owner && name ? `dsh plugin --profile web add github:${owner}/${name}` : '',
     added: typeof repo?.pushed_at === 'string' ? repo.pushed_at.slice(0, 10) : '',
+    ...(manualInstall ? {
+      installMode: 'manual',
+      manualNote: typeof repo?.manualNote === 'string' ? repo.manualNote : '',
+    } : {}),
   }
 }
 
@@ -38,13 +46,19 @@ export function mergeGithubTopic(data, repos) {
   let starsUpdated = 0
   for (const repo of repos) {
     const entry = githubRepoToEntry(repo)
-    if (!entry.owner || !entry.name || !entry.install) continue
+    if (!entry.owner || !entry.name || (!entry.install && entry.installMode !== 'manual')) continue
     const key = `${entry.owner.toLowerCase()}/${entry.name.toLowerCase()}`
     const known = index.get(key)
     if (known) {
       if (entry.stars > Number(known.stars ?? 0)) {
         known.stars = entry.stars
         starsUpdated += 1
+      }
+      if (entry.installMode === 'manual') {
+        known.install = ''
+        known.installMode = 'manual'
+        known.manualNote = entry.manualNote
+        if (entry.description?.zh) known.description = entry.description
       }
       continue
     }

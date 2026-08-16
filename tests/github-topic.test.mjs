@@ -41,6 +41,22 @@ test('converts a GitHub repo into a market entry', () => {
   assert.equal(entry.added, '2026-08-01')
 })
 
+test('marks suite repositories as manual installs', () => {
+  const entry = topic.githubRepoToEntry({
+    name: 'dsh-routing-suite',
+    owner: { login: 'yjh051108' },
+    html_url: 'https://github.com/yjh051108/dsh-routing-suite',
+    description: 'Routing suite',
+    descriptionZh: '路由套装',
+    installMode: 'manual',
+    manualNote: 'Clone with submodules and run install.ps1.',
+  })
+  assert.equal(entry.install, '')
+  assert.equal(entry.installMode, 'manual')
+  assert.equal(entry.description.zh, '路由套装')
+  assert.match(entry.manualNote, /install\.ps1/)
+})
+
 test('merge adds new repos and refreshes stars of known entries', () => {
   const data = JSON.parse(JSON.stringify(REGISTRY))
   const result = topic.mergeGithubTopic(data, [
@@ -54,6 +70,30 @@ test('merge adds new repos and refreshes stars of known entries', () => {
   assert.equal(data.plugins[1].name, 'dsh-new-hotness')
   assert.equal(data.categories.github.zh, 'GitHub 发现')
   assert.equal(data.githubExtra, 1)
+})
+
+test('pinned manual metadata overrides a previously discovered install command', () => {
+  const data = {
+    plugins: [{
+      name: 'dsh-routing-suite',
+      owner: 'yjh051108',
+      install: 'dsh plugin --profile web add github:yjh051108/dsh-routing-suite',
+      description: { en: 'old', zh: '' },
+      stars: 1,
+    }],
+  }
+  topic.mergeGithubTopic(data, [{
+    name: 'dsh-routing-suite',
+    owner: { login: 'yjh051108' },
+    description: 'Routing suite',
+    descriptionZh: '路由套装',
+    installMode: 'manual',
+    manualNote: 'Follow README.',
+    stargazers_count: 2500,
+  }])
+  assert.equal(data.plugins[0].install, '')
+  assert.equal(data.plugins[0].installMode, 'manual')
+  assert.equal(data.plugins[0].description.zh, '路由套装')
 })
 
 test('merge skips entries missing owner or name and tolerates bad input', () => {
@@ -88,4 +128,8 @@ test('bundled extra-plugins.json ships a valid pinned entry', () => {
     assert.equal(typeof repo.owner?.login, 'string')
     assert.equal(repo.fork, false)
   }
+  const suite = extras.find((repo) => repo.full_name === 'yjh051108/dsh-routing-suite')
+  assert.equal(suite?.installMode, 'manual')
+  const jSpace = extras.find((repo) => repo.full_name === 'Tiger3807861189/J-Space-Cognition-Suite-V3.6')
+  assert.equal(jSpace?.installMode, 'manual')
 })

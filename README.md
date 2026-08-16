@@ -39,11 +39,13 @@ dsh plugin --profile web add link:<本插件目录>
 - 出网请求仅允许 https 且 host 白名单（raw.githubusercontent.com 额外限定为清单仓库路径，防 SSRF）；安装目标只接受清单内条目，不接受任意包名。
 - 安装优先走 npm 包（秒级），并做防抢注校验：npm 包的 repository 与清单 GitHub owner/repo 不一致时自动回退 `github:owner/repo`。
 - 安装后校验包可解析且存在可运行入口（dsh 清单或 main 文件）；校验失败自动回滚卸载，不会留下坏包。
+- 非标准组合套装可作为“手动安装”条目收录：市场只展示项目安装说明，不会误走 `pnpm add`。`dsh-routing-suite` 即按此方式提供。
 - pnpm ≥10 拒绝或跳过构建脚本时，错误信息会带 pnpm-workspace.yaml 放行指引。
 - 卸载 = `pnpm remove` + 移出 `dsh.profile.bundles`，仅对 npm 安装的插件开放；link/preset 插件请直接编辑 profile。
 - 禁用/启用 = 在 profile 的 `cordis.patch.yml` 写入/移除受管的 `disabled: true` 条目（按插件自身 insert id 定位，带标记区块与备份），不删文件、可随时恢复，重启后生效。
 - 市场条目与已安装列表互通元数据：已安装插件显示市场描述与 GitHub 链接，市场里已装的插件显示「可更新」徽标。
 - 市场支持排序：星标最多（默认）/ 默认策展顺序 / 最近添加，可叠加搜索与分类筛选。
+- 市场列表默认展示前 500 个筛选结果；结果更多时可在列表底部继续加载，每次增加 500 个。
 
 ## 一键全部更新
 

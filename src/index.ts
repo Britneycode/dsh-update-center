@@ -638,6 +638,7 @@ export function apply(ctx: AppContext, config: Config): void {
     name: string
     owner?: string
     npm?: string | null
+    installMode?: 'manual'
     [key: string]: unknown
   }
 
@@ -901,6 +902,9 @@ export function apply(ctx: AppContext, config: Config): void {
           const entries = Array.isArray(registry.data?.plugins) ? registry.data.plugins as RegistryEntry[] : []
           const entry = entries.find((p) => p.name === name)
           if (!entry) return send(200, { ok: false, result: `插件市场中没有这个条目: ${name}` })
+          if (entry.installMode === 'manual') {
+            return send(200, { ok: false, result: `${name} 是组合套装，需按项目页面的安装说明手动安装。` })
+          }
           const installedNow = inventoryBasic().some((e) =>
             e.name === entry.name || (typeof entry.npm === 'string' && !!entry.npm && e.name === entry.npm))
           if (installedNow) return send(200, { ok: false, result: `${name} 已经安装过了。` })
