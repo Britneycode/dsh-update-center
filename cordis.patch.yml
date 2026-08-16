@@ -1,4 +1,4 @@
 # dsh-update-center bundle patch: mounts the host plugin into a profile.
 - insert:
     - id: update-center
-      name: '@dsh-external/dsh-update-center'
+      name: 'dsh-update-center'

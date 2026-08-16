@@ -1,8 +1,7 @@
 {
-  "name": "@dsh-external/dsh-update-center",
+  "name": "dsh-update-center",
   "version": "0.8.0",
-  "description": "更新中心：插件市场（安装/卸载/禁用）+ 一键全部更新 + 已装插件管理 + dsh 本体更新",
-  "private": true,
+  "description": "dsh (DeepSeek Harness) 更新中心与插件市场：自托管 plugins.json 注册表（GitHub dsh-plugin 主题自动聚合 + npm 包名映射秒级安装），一键安装/更新/卸载/禁用插件与更新 dsh 本体。Update center & plugin marketplace for DeepSeek Harness.",
   "type": "module",
   "main": "./lib/index.js",
   "types": "./lib/types/index.d.ts",
@@ -13,7 +12,24 @@
     "plugins.json",
     "cordis.patch.yml"
   ],
+  "keywords": [
+    "dsh-plugin",
+    "deepseek-harness",
+    "dsh",
+    "plugin-market",
+    "update-center",
+    "cordis"
+  ],
+  "author": "Britneycode",
   "license": "BSD-3-Clause",
+  "repository": {
+    "type": "git",
+    "url": "git+ssh://git@github.com/Britneycode/dsh-update-center.git"
+  },
+  "bugs": {
+    "url": "https://github.com/Britneycode/dsh-update-center/issues"
+  },
+  "homepage": "https://github.com/Britneycode/dsh-update-center#readme",
   "peerDependencies": {
     "@deepseek-ai/dsh-llm": ">=0.0.1-rc <2",
     "@deepseek-ai/dsh-tools": ">=0.0.1-rc <2",

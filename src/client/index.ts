@@ -1,5 +1,5 @@
 /**
- * @dsh-external/dsh-update-center 设置页面板。
+ * dsh-update-center 设置页面板。
  *
  * 同源 API 提供状态、检查、更新、市场（安装/卸载/禁用）动作；React 组件只负责
  * 面板挂载，界面使用原生 DOM，避免把宿主的 React 运行时打进插件 bundle。
@@ -667,5 +667,5 @@ export function apply(ctx: ClientContext): void {
       order: 60,
       label: () => '更新中心',
     }, UpdateCenterPanel),
-  ), '@dsh-external/dsh-update-center: panel')
+  ), 'dsh-update-center: panel')
 }

@@ -1,5 +1,5 @@
 /**
- * @dsh-external/dsh-update-center — 更新中心（ui-panel 形态）。
+ * dsh-update-center — 更新中心（ui-panel 形态）。
  *
  * 能力：
  *  1. 已安装插件清单（profile dependencies/bundles + 版本，npm/link 分类）
@@ -29,7 +29,7 @@ import { runCommandAsync } from './run-command.mjs'
 import { mergeGithubTopic } from './github-topic.mjs'
 import { applyNpmMapping } from './npm-mapping.mjs'
 
-export const name = '@dsh-external/dsh-update-center'
+export const name = 'dsh-update-center'
 export const inject = ['tools', 'webServer']
 
 export interface Config {
@@ -1025,7 +1025,7 @@ export function apply(ctx: AppContext, config: Config): void {
         return send(500, { ok: false, error: String(e instanceof Error ? e.message : e) })
       }
     },
-  }), '@dsh-external/dsh-update-center: api')
+  }), 'dsh-update-center: api')
 
   // ── 工具：给 agent 的只读状态查询 ──
   ctx.effect(() => ctx.tools.register(defineTool({
@@ -1040,7 +1040,7 @@ export function apply(ctx: AppContext, config: Config): void {
       const [repo, plugins] = await Promise.all([repoStatus(), pluginList()])
       return JSON.stringify({ repo, plugins }, null, 2)
     },
-  })), '@dsh-external/dsh-update-center: status tool')
+  })), 'dsh-update-center: status tool')
 
   // ── 市场清单后台自动刷新（12 小时一次；失败静默，保留现有缓存）──
   ctx.effect(() => {
@@ -1056,7 +1056,7 @@ export function apply(ctx: AppContext, config: Config): void {
       })
     }, REGISTRY_REFRESH_INTERVAL_MS)
     return () => clearInterval(timer)
-  }, '@dsh-external/dsh-update-center: registry auto refresh')
+  }, 'dsh-update-center: registry auto refresh')
 
   logger?.info?.('[%s] 更新中心启动（repo=%s profile=%s）', name, repoDir || '(未找到)', profileDir)
 }

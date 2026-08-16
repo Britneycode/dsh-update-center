@@ -1,5 +1,5 @@
 /**
- * @dsh-external/dsh-update-center — 更新中心（ui-panel 形态）。
+ * dsh-update-center — 更新中心（ui-panel 形态）。
  *
  * 能力：
  *  1. 已安装插件清单（profile dependencies/bundles + 版本，npm/link 分类）
@@ -16,7 +16,7 @@
  *  - 更新前拒绝脏工作区；更新后不自动结束自身进程，由面板提示用户重启。
  */
 import type { Context } from 'cordis';
-export declare const name = "@dsh-external/dsh-update-center";
+export declare const name = "dsh-update-center";
 export declare const inject: string[];
 export interface Config {
     /** dsh 仓库目录（缺省自动探测）。 */

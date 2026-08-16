@@ -1,4 +1,4 @@
-# @dsh-external/dsh-update-center
+# dsh-update-center
 
 DeepSeek Harness 的本地更新中心：内置插件市场（浏览/搜索/一键安装/卸载/禁用），统一管理已装插件与 dsh 本体、profile 中的 npm/link 插件以及 agent preset 的更新。
 
