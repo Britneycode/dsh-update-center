@@ -3,7 +3,7 @@
  "url": "https://github.com/search?q=topic%3Adsh-plugin",
  "source": "GitHub topic:dsh-plugin",
  "updated": "2026-08-16",
- "count": 507,
+ "count": 508,
  "categories": {
   "github": {
    "en": "GitHub discovered",
@@ -7615,7 +7615,22 @@
    "stars": 6,
    "install": "dsh plugin --profile web add github:Qinling-Melon-Farmers/dsh-memoir",
    "added": "2026-08-14"
+  },
+  {
+   "name": "dsh-archive-vault",
+   "owner": "Britneycode",
+   "url": "https://github.com/Britneycode/dsh-archive-vault",
+   "page": "",
+   "category": "github",
+   "description": {
+    "en": "",
+    "zh": ""
+   },
+   "npm": null,
+   "stars": 0,
+   "install": "dsh plugin --profile web add github:Britneycode/dsh-archive-vault",
+   "added": "2026-08-16"
   }
  ],
- "githubExtra": 6
+ "githubExtra": 1
 }
