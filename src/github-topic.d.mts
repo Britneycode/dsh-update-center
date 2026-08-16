@@ -27,3 +27,13 @@ export declare function mergeGithubTopic(
   data: { plugins: Array<Record<string, unknown>>, categories?: Record<string, unknown>, [key: string]: unknown },
   repos: GithubRepo[],
 ): { added: number, starsUpdated: number }
+
+export declare function buildRegistryFromRepos(repos: GithubRepo[]): {
+  name: string
+  url: string
+  source: string
+  updated: string
+  count: number
+  categories: Record<string, { en: string, zh: string }>
+  plugins: GithubTopicEntry[]
+}

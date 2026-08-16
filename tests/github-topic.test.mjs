@@ -1,4 +1,6 @@
 import assert from 'node:assert/strict'
+import { readFileSync } from 'node:fs'
+import { fileURLToPath } from 'node:url'
 import test from 'node:test'
 
 const topic = await import('../src/github-topic.mjs').catch(() => ({}))
@@ -60,4 +62,30 @@ test('merge skips entries missing owner or name and tolerates bad input', () => 
   assert.deepEqual(topic.mergeGithubTopic(null, []), { added: 0, starsUpdated: 0 })
   assert.deepEqual(topic.mergeGithubTopic(data, null), { added: 0, starsUpdated: 0 })
   assert.equal(data.plugins.length, 1)
+})
+
+test('buildRegistryFromRepos builds a sorted single-category registry', () => {
+  const data = topic.buildRegistryFromRepos([
+    { name: 'small', owner: { login: 'a' }, stargazers_count: 3, description: 's', pushed_at: '2026-08-01T00:00:00Z' },
+    { name: 'big', owner: { login: 'b' }, stargazers_count: 300, description: 'b', pushed_at: '2026-08-02T00:00:00Z' },
+    { name: 'forked', owner: { login: 'c' }, stargazers_count: 9999, fork: true },
+    'not-a-repo',
+  ])
+  assert.equal(data.plugins.length, 2)
+  assert.equal(data.plugins[0].name, 'big')
+  assert.equal(data.plugins[0].stars, 300)
+  assert.equal(data.plugins[1].name, 'small')
+  assert.equal(data.categories.github.zh, 'GitHub 发现')
+  assert.equal(data.count, 2)
+  assert.match(data.updated, /^\d{4}-\d{2}-\d{2}$/)
+})
+
+test('bundled extra-plugins.json ships a valid pinned entry', () => {
+  const extras = JSON.parse(readFileSync(fileURLToPath(new URL('../data/extra-plugins.json', import.meta.url)), 'utf8'))
+  assert.ok(Array.isArray(extras) && extras.length >= 1)
+  for (const repo of extras) {
+    assert.equal(typeof repo.name, 'string')
+    assert.equal(typeof repo.owner?.login, 'string')
+    assert.equal(repo.fork, false)
+  }
 })

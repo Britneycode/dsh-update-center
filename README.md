@@ -20,8 +20,8 @@ dsh plugin --profile web add link:<本插件目录>
 
 ## 插件市场
 
-- 数据源：awesome-dsh-plugin.com 官方清单（GitHub 仓库每日 CI 产出）；站点不可用时自动降级解析 GitHub 仓库的 README 策展清单（字段较少但可浏览可安装），再回退磁盘缓存与内置快照（`data/registry-snapshot.json`）。
-- GitHub 主题扩展：后台扫描 GitHub 上带 `dsh-plugin` 话题的仓库（按星标降序取前 500，排除 fork），与官方清单按 owner/name 去重合并——新仓库进入「GitHub 发现」分类可直接安装，已知插件顺带刷新星标。
+- 数据源：GitHub 上带 `dsh-plugin` 话题的仓库（按星标降序取前 500，排除 fork），不依赖第三方清单站点；网络不可用时回退磁盘缓存与内置快照（`data/registry-snapshot.json`，用 `npm run refresh:snapshot` 重新生成）。
+- 常驻条目（`data/extra-plugins.json`）无条件并入清单（按 owner/name 去重），保证 0 星的新插件不出现在扫描窗口时市场里仍然可见。
 - 清单自动刷新：缓存超过 24 小时会在打开面板时自动拉取最新；后台每 12 小时静默刷新一次；「刷新清单」按钮随时强制更新。
 - 出网请求仅允许 https 且 host 白名单（raw.githubusercontent.com 额外限定为清单仓库路径，防 SSRF）；安装目标只接受清单内条目，不接受任意包名。
 - 安装优先走 npm 包（秒级），并做防抢注校验：npm 包的 repository 与清单 GitHub owner/repo 不一致时自动回退 `github:owner/repo`。
