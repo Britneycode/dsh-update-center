@@ -12,6 +12,7 @@ import { readFile, writeFile } from 'node:fs/promises'
 import { dirname, join } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { buildRegistryFromRepos, mergeGithubTopic } from '../src/github-topic.mjs'
+import { applyNpmMapping } from '../src/npm-mapping.mjs'
 
 const root = join(dirname(fileURLToPath(import.meta.url)), '..')
 const SELF_REPO = 'Britneycode/dsh-update-center'
@@ -50,6 +51,23 @@ async function loadExistingRegistry() {
   return null
 }
 
+async function fetchNpmSearchObjects() {
+  const objects = []
+  for (let from = 0; from < 1000; from += 250) {
+    const url = new URL('https://registry.npmjs.org/-/v1/search')
+    url.searchParams.set('text', 'keywords:dsh-plugin')
+    url.searchParams.set('size', '250')
+    url.searchParams.set('from', String(from))
+    if (url.protocol !== 'https:' || url.hostname !== 'registry.npmjs.org') throw new Error(`endpoint check failed: ${url.host}`)
+    const payload = await fetchJson(url)
+    const items = Array.isArray(payload?.objects) ? payload.objects : []
+    if (!items.length) break
+    objects.push(...items)
+    if (from + items.length >= Number(payload?.total ?? 0)) break
+  }
+  return objects
+}
+
 const topicRepos = await fetchGithubTopicRepos()
 if (!topicRepos.length) throw new Error('GitHub topic scan returned nothing')
 const selfRepo = await fetchJson(`https://api.github.com/repos/${SELF_REPO}`)
@@ -58,6 +76,8 @@ if (!selfRepo?.name) throw new Error('self repo info invalid')
 const existing = await loadExistingRegistry()
 const data = existing ?? buildRegistryFromRepos(topicRepos)
 const merged = mergeGithubTopic(data, [...topicRepos, selfRepo])
+const npmObjects = await fetchNpmSearchObjects()
+const mapped = applyNpmMapping(data, npmObjects)
 if (data.plugins.length > MAX_ENTRIES) {
   data.plugins.sort((a, b) => Number(b.stars ?? 0) - Number(a.stars ?? 0))
   data.plugins = data.plugins.slice(0, MAX_ENTRIES)
@@ -70,4 +90,4 @@ await writeFile(join(root, 'plugins.json'), text, 'utf8')
 await writeFile(join(root, 'data', 'registry-snapshot.json'), text, 'utf8')
 await writeFile(join(root, 'data', 'extra-plugins.json'), JSON.stringify([selfRepo], null, 1) + '\n', 'utf8')
 const base = existing ? `存量 ${existing.plugins.length}` : '新建'
-console.log(`plugins.json 已生成：${base} + 本轮扫描新增 ${merged.added}（含去重）= 共 ${data.plugins.length} 条（上限 ${MAX_ENTRIES}）`)
+console.log(`plugins.json 已生成：${base} + 本轮扫描新增 ${merged.added}（含去重）+ npm 映射 ${mapped} = 共 ${data.plugins.length} 条（上限 ${MAX_ENTRIES}）`)

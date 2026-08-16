@@ -27,6 +27,7 @@ import { homedir } from 'node:os'
 import { fileURLToPath } from 'node:url'
 import { runCommandAsync } from './run-command.mjs'
 import { mergeGithubTopic } from './github-topic.mjs'
+import { applyNpmMapping } from './npm-mapping.mjs'
 
 export const name = '@dsh-external/dsh-update-center'
 export const inject = ['tools', 'webServer']
@@ -535,8 +536,41 @@ export function apply(ctx: AppContext, config: Config): void {
     return repos
   }
 
+  /** npm 关键词搜索（keywords:dsh-plugin，每页 250，最多 4 页拿全）。
+   *  端点为固定字面量 host（registry.npmjs.org）+ 内部整数偏移。 */
+  async function fetchNpmSearchObjects(): Promise<any[]> {
+    const objects: any[] = []
+    for (let from = 0; from < 1000; from += 250) {
+      const url = new URL('https://registry.npmjs.org/-/v1/search')
+      url.searchParams.set('text', 'keywords:dsh-plugin')
+      url.searchParams.set('size', '250')
+      url.searchParams.set('from', String(from))
+      if (url.protocol !== 'https:' || url.hostname !== 'registry.npmjs.org') {
+        throw new Error(`npm search 端点校验失败: ${url.host}`)
+      }
+      const controller = new AbortController()
+      const timer = setTimeout(() => controller.abort(), 15_000)
+      try {
+        const response = await fetch(url, { signal: controller.signal, headers: { accept: 'application/json' } })
+        if (!response.ok) break
+        const payload: any = await response.json()
+        const items = Array.isArray(payload?.objects) ? payload.objects : []
+        if (!items.length) break
+        objects.push(...items)
+        const total = Number(payload?.total ?? 0)
+        if (from + items.length >= total) break
+      } catch {
+        break
+      } finally {
+        clearTimeout(timer)
+      }
+    }
+    return objects
+  }
+
   /** 后台 GitHub 主题扫描：与当前注册表按 owner/name 去重合并（重复条目仅刷新
-   *  星标，新条目追加进「GitHub 发现」分类），结果写回本地磁盘缓存。 */
+   *  星标，新条目追加进「GitHub 发现」分类），并用 npm 关键词搜索补包名映射；
+   *  结果写回本地磁盘缓存。 */
   async function enrichRegistryWithGithubTopics(): Promise<void> {
     if (githubTopicScanRunning || !registryCache) return
     githubTopicScanRunning = true
@@ -544,11 +578,13 @@ export function apply(ctx: AppContext, config: Config): void {
       const repos = await fetchGithubTopicRepos()
       if (!repos.length) return
       const { added, starsUpdated } = mergeGithubTopic(registryCache.data, repos)
-      if (!added && !starsUpdated) return
+      const npmObjects = await fetchNpmSearchObjects()
+      const mapped = applyNpmMapping(registryCache.data, npmObjects)
+      if (!added && !starsUpdated && !mapped) return
       try {
         writeJsonAtomic(registryCacheFile, { fetchedAt: registryCache.at, data: registryCache.data })
       } catch { /* 写盘失败仅影响下次启动的缓存 */ }
-      logger?.info?.('[%s] GitHub 主题扫描：+%d 新插件，%d 星标刷新（共 %d）', name, added, starsUpdated, registryCache.data.plugins.length)
+      logger?.info?.('[%s] GitHub 主题扫描：+%d 新插件，%d 星标刷新，%d 个 npm 映射（共 %d）', name, added, starsUpdated, mapped, registryCache.data.plugins.length)
     } finally {
       githubTopicScanRunning = false
     }
