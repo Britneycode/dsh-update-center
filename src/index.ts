@@ -457,53 +457,43 @@ export function apply(ctx: AppContext, config: Config): void {
       && data.plugins.every((p: any) => p && typeof p.name === 'string' && typeof p.url === 'string')
   }
 
-  /** 在网络拉取窗口内临时启用 Node 的 env 代理（完成后恢复），并保护 loopback
-   *  流量不被代理（NO_PROXY）。窗口内宿主其它 fetch 若依赖 env 代理也会受益；
-   *  串行执行不会与另一次拉取重叠。 */
-  async function withRegistryProxyEnv<T>(fn: () => Promise<T>): Promise<T> {
-    const keys = ['NODE_USE_ENV_PROXY', 'HTTPS_PROXY', 'HTTP_PROXY', 'NO_PROXY'] as const
-    const previous: Record<string, string | undefined> = {}
-    for (const key of keys) previous[key] = process.env[key]
+  /** 拉取注册表文本：配置了代理时走 curl（按调用时环境变量代理；Windows 10+
+   *  自带 curl.exe，Unix 亦普遍可用），否则直接 fetch。端点由调用方以字面量传入。 */
+  async function fetchRegistryText(url: string): Promise<string | null> {
     const proxy = await proxyPromise
+    if (proxy) {
+      const r = await execAsync('curl', ['-sSLf', '--max-time', '20', '--max-filesize', String(REGISTRY_MAX_BYTES), '-H', 'accept: application/json', url], undefined, 60_000, {
+        HTTPS_PROXY: proxy,
+        HTTP_PROXY: proxy,
+        https_proxy: proxy,
+        http_proxy: proxy,
+      })
+      return r.ok && r.out ? r.out : null
+    }
+    const controller = new AbortController()
+    const timer = setTimeout(() => controller.abort(), 15_000)
     try {
-      if (proxy) {
-        process.env.NODE_USE_ENV_PROXY = '1'
-        process.env.HTTPS_PROXY = proxy
-        process.env.HTTP_PROXY = proxy
-        if (!process.env.NO_PROXY) process.env.NO_PROXY = 'localhost,127.0.0.1,::1'
-      }
-      return await fn()
+      const response = await fetch(url, { signal: controller.signal, headers: { accept: 'application/json' } })
+      if (!response.ok) return null
+      const text = await response.text()
+      return text.length > REGISTRY_MAX_BYTES ? null : text
+    } catch {
+      return null
     } finally {
-      for (const key of keys) {
-        if (previous[key] === undefined) delete process.env[key]
-        else process.env[key] = previous[key]
-      }
+      clearTimeout(timer)
     }
   }
 
   /** 网络拉取：本仓库根目录 plugins.json 注册表（raw 直链，字面量端点）；
    *  失败返回 null，由磁盘缓存与随包快照兜底。 */
   async function fetchRegistryFromNetwork(): Promise<{ source: string; data: any } | null> {
-    return withRegistryProxyEnv(async () => {
-      const controller = new AbortController()
-      const timer = setTimeout(() => controller.abort(), 15_000)
-      try {
-        const response = await fetch('https://raw.githubusercontent.com/Britneycode/dsh-update-center/main/plugins.json', {
-          signal: controller.signal,
-          headers: { accept: 'application/json' },
-        })
-        if (response.ok) {
-          const text = await response.text()
-          if (text.length <= REGISTRY_MAX_BYTES) {
-            try {
-              const data = JSON.parse(text)
-              if (validRegistry(data)) return { source: 'registry', data }
-            } catch { /* 数据无效走兜底 */ }
-          }
-        }
-      } catch { /* 网络失败走兜底 */ } finally { clearTimeout(timer) }
-      return null
-    })
+    const text = await fetchRegistryText('https://raw.githubusercontent.com/Britneycode/dsh-update-center/main/plugins.json')
+    if (!text) return null
+    try {
+      const data = JSON.parse(text)
+      if (validRegistry(data)) return { source: 'registry', data }
+    } catch { /* 数据无效走兜底 */ }
+    return null
   }
 
   /** GitHub 搜索 API 拉取一页 topic:dsh-plugin 仓库（按星标降序）。
@@ -551,7 +541,7 @@ export function apply(ctx: AppContext, config: Config): void {
     if (githubTopicScanRunning || !registryCache) return
     githubTopicScanRunning = true
     try {
-      const repos = await withRegistryProxyEnv(() => fetchGithubTopicRepos())
+      const repos = await fetchGithubTopicRepos()
       if (!repos.length) return
       const { added, starsUpdated } = mergeGithubTopic(registryCache.data, repos)
       if (!added && !starsUpdated) return
