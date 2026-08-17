@@ -458,19 +458,8 @@ export function apply(ctx: AppContext, config: Config): void {
       && data.plugins.every((p: any) => p && typeof p.name === 'string' && typeof p.url === 'string')
   }
 
-  /** 拉取注册表文本：配置了代理时走 curl（按调用时环境变量代理；Windows 10+
-   *  自带 curl.exe，Unix 亦普遍可用），否则直接 fetch。端点由调用方以字面量传入。 */
-  async function fetchRegistryText(url: string): Promise<string | null> {
-    const proxy = await proxyPromise
-    if (proxy) {
-      const r = await execAsync('curl', ['-sSLf', '--max-time', '20', '--max-filesize', String(REGISTRY_MAX_BYTES), '-H', 'accept: application/json', url], undefined, 60_000, {
-        HTTPS_PROXY: proxy,
-        HTTP_PROXY: proxy,
-        https_proxy: proxy,
-        http_proxy: proxy,
-      })
-      return r.ok && r.out ? r.out : null
-    }
+  /** 直接 fetch 拉取（不走代理），带超时与大小上限；失败返回 null。 */
+  async function fetchRegistryTextDirect(url: string): Promise<string | null> {
     const controller = new AbortController()
     const timer = setTimeout(() => controller.abort(), 15_000)
     try {
@@ -483,6 +472,27 @@ export function apply(ctx: AppContext, config: Config): void {
     } finally {
       clearTimeout(timer)
     }
+  }
+
+  /** 拉取注册表文本：配置了代理时优先走 curl（按调用时环境变量代理；Windows 10+
+   *  自带 curl.exe，Unix 亦普遍可用），失败自动降级直连重试一次；未配置代理时
+   *  直接 fetch。端点由调用方以字面量传入。 */
+  async function fetchRegistryText(url: string): Promise<string | null> {
+    const proxy = await proxyPromise
+    if (proxy) {
+      const r = await execAsync('curl', ['-sSLf', '--max-time', '20', '--max-filesize', String(REGISTRY_MAX_BYTES), '-H', 'accept: application/json', url], undefined, 60_000, {
+        HTTPS_PROXY: proxy,
+        HTTP_PROXY: proxy,
+        https_proxy: proxy,
+        http_proxy: proxy,
+      })
+      if (r.ok && r.out) return r.out
+      // 代理不可用（超时/握手失败等）时不立刻失败：降级直连重试一次，
+      // 避免代理一抖整个市场清单长时间回退到旧缓存。
+      logger?.warn?.('[%s] 注册表经代理拉取失败（curl exit=%s），降级直连重试', name, r.code)
+      return fetchRegistryTextDirect(url)
+    }
+    return fetchRegistryTextDirect(url)
   }
 
   /** 网络拉取：本仓库根目录 plugins.json 注册表（raw 直链，字面量端点）；
