@@ -34,6 +34,7 @@ dsh plugin --profile web add link:<本插件目录>
 - 增量扫描：后台每 12 小时扫描 GitHub `topic:dsh-plugin`（星标前 500，排除 fork），与注册表按 owner/name 去重合并——重复条目仅刷新星标，新条目追加；掉出扫描窗口的老条目在 plugins.json 中保留（累计语义，上限 2000 防膨胀）。
 - npm 包名映射：同一轮扫描会查询 npm 关键词搜索（`keywords:dsh-plugin`，约 800+ 包），按 repository 地址与市场条目匹配——仓库一致才映射（天然防抢注）；命中的条目显示 npm 标记并走 npm 秒级安装，未命中的走 `github:` 安装。
 - 更新注册表：`npm run refresh:snapshot` 会以现有 plugins.json 为基底累计合并最新扫描结果并连同离线快照一起重写，提交推送后生效。
+- 注册表自动刷新：仓库内置 GitHub Actions 定时任务（`.github/workflows/registry-refresh.yml`）每天自动跑刷新脚本并在有变化时提交推送，也可在 Actions 页面手动触发。
 - 离线兜底：磁盘缓存 → 随包快照（`data/registry-snapshot.json`）；常驻条目（`data/extra-plugins.json`）无条件并入，保证 0 星新插件始终可见。
 - 清单自动刷新：缓存超过 24 小时会在打开面板时自动拉取最新；「刷新清单」按钮随时强制更新。
 - 出网请求仅允许 https 且 host 白名单（raw.githubusercontent.com 额外限定为清单仓库路径，防 SSRF）；安装目标只接受清单内条目，不接受任意包名。
