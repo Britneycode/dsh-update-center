@@ -8431,7 +8431,7 @@
    "owner": "walkinglabs",
    "url": "https://github.com/walkinglabs/learn-harness-engineering",
    "page": "",
-   "category": "github",
+   "category": "other",
    "description": {
     "en": "Harness engineering beginner tutorial, from 0 to 1",
     "zh": ""
@@ -8446,7 +8446,7 @@
    "owner": "Alisa0808",
    "url": "https://github.com/Alisa0808/vox-director",
    "page": "",
-   "category": "github",
+   "category": "vision",
    "description": {
     "en": "Turn one topic into a finished Vox-style paper-collage explainer/ad video — automated end to end on Atlas Cloud + ffmpeg. An agent skill.",
     "zh": ""
@@ -8461,7 +8461,7 @@
    "owner": "Awesome-AI-Pedia",
    "url": "https://github.com/Awesome-AI-Pedia/Awesome-AI-Pedia",
    "page": "",
-   "category": "github",
+   "category": "vision",
    "description": {
     "en": "AI skills大全 mcp ai知识库 Agent 全维度 AI 资源百科，DSH插件 收录大模型、智能 Agent、RAG 检索增强、多模态、MLOps、AI 应用工具、AI面试集、Vibe coding 大全、零基础学习路线，持续更新前沿 AI 开源项目，开发者一站式 AI 导航库",
     "zh": ""
@@ -8476,7 +8476,7 @@
    "owner": "liebaojun",
    "url": "https://github.com/liebaojun/MakoCode",
    "page": "",
-   "category": "github",
+   "category": "fun",
    "description": {
     "en": "MakoCode — 茉子版 Agent | Galgame 风格桌面 AI Agent，零门槛体验 Agent 的乐趣",
     "zh": ""
@@ -8491,7 +8491,7 @@
    "owner": "shengsheng90",
    "url": "https://github.com/shengsheng90/DSH-taskboard",
    "page": "",
-   "category": "github",
+   "category": "workflow",
    "description": {
     "en": "Native local Taskboard plugin for DeepSeek Harness. SQLite-backed projects, Agent claim/review, and a native Web UI — no iframe, no second chat runtime.",
     "zh": ""
@@ -8506,7 +8506,7 @@
    "owner": "taichuy",
    "url": "https://github.com/taichuy/deepseek-harness-auth",
    "page": "",
-   "category": "github",
+   "category": "other",
    "description": {
     "en": "DeepSeek Harness auth插件",
     "zh": ""
@@ -8521,7 +8521,7 @@
    "owner": "weshopai",
    "url": "https://github.com/weshopai/weshop-dsh-plugin",
    "page": "",
-   "category": "github",
+   "category": "ui",
    "description": {
     "en": "Native WeShop Cordis plugin for DeepSeek Harness. Allow you to use infinite canvas with infinite creative skills.",
     "zh": ""
@@ -8536,7 +8536,7 @@
    "owner": "HuanLinOTO",
    "url": "https://github.com/HuanLinOTO/dsh-plugin-sleep",
    "page": "",
-   "category": "github",
+   "category": "sessions",
    "description": {
     "en": "向模型暴露 sleep 工具，按指定毫秒暂停执行后返回，支持取消/clamp | Exposes a sleep tool that pauses for specified ms then returns, with cancellation/clamping",
     "zh": ""
@@ -8551,7 +8551,7 @@
    "owner": "Lixxx1",
    "url": "https://github.com/Lixxx1/dsh-vscode",
    "page": "",
-   "category": "github",
+   "category": "models",
    "description": {
     "en": "A Claude Code/Codex-style VS Code sidebar for DeepSeek Harness. 像 Claude Code 、Codex 一样，在 VS Code 侧边栏中使用 DeepSeek Harness。",
     "zh": ""
@@ -8566,7 +8566,7 @@
    "owner": "taxueseek",
    "url": "https://github.com/taxueseek/dsh-files",
    "page": "",
-   "category": "github",
+   "category": "ui",
    "description": {
     "en": "DeepSeek Harness dual-face plugin: session-isolated file upload with colorful composer cards + read_document tool (text/PDF/DOCX/XLSX) with content sniffing and LRU caching",
     "zh": ""
@@ -8581,7 +8581,7 @@
    "owner": "liguobao",
    "url": "https://github.com/liguobao/deepseek-harness-remote",
    "page": "",
-   "category": "github",
+   "category": "tools",
    "description": {
     "en": "基于 DeepSeek Harness 插件机制的多端远程访问方案，让桌面端与 Android 端安全连接并操作远程 Harness。（A multi-device remote access solution built on the DeepSeek Harness plugin system, enabling desktop and Android clients to securely connect to and operate a remote Harness.）",
     "zh": ""
@@ -8596,7 +8596,7 @@
    "owner": "HuanLinOTO",
    "url": "https://github.com/HuanLinOTO/dsh-plugin-d399",
    "page": "",
-   "category": "github",
+   "category": "fun",
    "description": {
     "en": "模型生成时右下角弹出小游戏菜单（Wordle/消消乐/192 款参数化小游戏，可拓展注册表） | Pops up a mini-game menu while the model generates (Wordle/Match-3/192 parametric mini-games, extensible registry)",
     "zh": ""
@@ -8611,7 +8611,7 @@
    "owner": "XieZongChen",
    "url": "https://github.com/XieZongChen/dsh-md-notes",
    "page": "",
-   "category": "github",
+   "category": "sessions",
    "description": {
     "en": "A note-taking plugin for DeepSeek Harness (DSH). It provides a full MD notes manager and MD notes editor, letting you quickly capture conversation content into notes. Notes can be maintained by syncing to a Git repository",
     "zh": ""
@@ -8626,7 +8626,7 @@
    "owner": "Jensen-Yao",
    "url": "https://github.com/Jensen-Yao/deepseek-harness-android-app",
    "page": "",
-   "category": "github",
+   "category": "workflow",
    "description": {
     "en": "DeepSeek Harness 安卓通用控制端：Termux 引导、一键部署、内置浏览器与存储管理（dsh-plugin 生态）",
     "zh": ""
@@ -8641,7 +8641,7 @@
    "owner": "lanlandeli",
    "url": "https://github.com/lanlandeli/dsh-usage-stats",
    "page": "",
-   "category": "github",
+   "category": "billing",
    "description": {
     "en": "DeepSeek Harness 使用统计插件｜Token 总量与构成、7/30 天趋势、年度活跃热力图、模型占比、工作区/任务筛选、CSV/JSON 导出",
     "zh": ""

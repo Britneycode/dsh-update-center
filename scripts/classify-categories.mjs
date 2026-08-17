@@ -4,7 +4,7 @@
  *
  * 用法：
  *   node scripts/classify-categories.mjs           # 预览（不写盘）
- *   node scripts/classify-categories.mjs --write   # 应用到 plugins.json
+ *   node scripts/classify-categories.mjs --write   # 应用到 plugins.json 与离线快照
  */
 import { readFileSync, writeFileSync } from 'node:fs'
 import { dirname, join } from 'node:path'
@@ -35,5 +35,9 @@ if (!write) {
 } else {
   data.updated = new Date().toISOString().slice(0, 10)
   writeFileSync(registryPath, JSON.stringify(data, null, 1) + '\n')
+  // 与 refresh:snapshot 保持一致：离线快照与注册表总是同一份内容
+  const snapshotPath = join(root, 'data', 'registry-snapshot.json')
+  writeFileSync(snapshotPath, JSON.stringify(data, null, 1) + '\n')
   console.log(`\n已写入 ${registryPath}`)
+  console.log(`已写入 ${snapshotPath}`)
 }
