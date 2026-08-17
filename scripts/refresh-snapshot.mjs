@@ -19,15 +19,34 @@ const SELF_REPO = 'Britneycode/dsh-update-center'
 const TOPIC_PAGES = 5
 const MAX_ENTRIES = 2000
 
-async function fetchJson(url) {
-  const response = await fetch(url, { headers: { accept: 'application/vnd.github+json' } })
-  if (!response.ok) throw new Error(`${response.status} ${url}`)
-  return response.json()
+const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms))
+
+async function fetchJson(url, { retries = 3 } = {}) {
+  for (let attempt = 0; ; attempt++) {
+    const response = await fetch(url, {
+      headers: { accept: 'application/vnd.github+json', 'user-agent': 'dsh-update-center/refresh-snapshot' },
+    })
+    if (response.ok) return response.json()
+    // GitHub 未认证搜索配额 10 次/分钟：403/429 时按 retry-after / x-ratelimit-reset 等待后重试
+    if ((response.status === 403 || response.status === 429) && attempt < retries) {
+      const retryAfter = Number(response.headers.get('retry-after'))
+      const reset = Number(response.headers.get('x-ratelimit-reset'))
+      const wait = retryAfter > 0
+        ? retryAfter * 1000
+        : reset > 0
+          ? Math.max(0, reset * 1000 - Date.now()) + 1000
+          : 15_000
+      await sleep(Math.min(wait, 60_000))
+      continue
+    }
+    throw new Error(`${response.status} ${url}`)
+  }
 }
 
 async function fetchGithubTopicRepos() {
   const repos = []
   for (let page = 1; page <= TOPIC_PAGES; page++) {
+    if (page > 1) await sleep(1100) // 避免突发请求触发 GitHub 次级限流
     const url = new URL('https://api.github.com/search/repositories')
     url.searchParams.set('q', 'topic:dsh-plugin')
     url.searchParams.set('sort', 'stars')
@@ -54,6 +73,7 @@ async function loadExistingRegistry() {
 async function fetchNpmSearchObjects() {
   const objects = []
   for (let from = 0; from < 1000; from += 250) {
+    if (from > 0) await sleep(600)
     const url = new URL('https://registry.npmjs.org/-/v1/search')
     url.searchParams.set('text', 'keywords:dsh-plugin')
     url.searchParams.set('size', '250')
