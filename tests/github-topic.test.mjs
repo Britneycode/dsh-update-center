@@ -26,15 +26,15 @@ test('converts a GitHub repo into a market entry', () => {
     name: 'dsh-fancy',
     owner: { login: 'someone' },
     html_url: 'https://github.com/someone/dsh-fancy',
-    description: 'A fancy plugin',
+    description: 'A fancy theme pack',
     stargazers_count: 42,
     pushed_at: '2026-08-01T00:00:00Z',
     fork: false,
   })
   assert.equal(entry.name, 'dsh-fancy')
   assert.equal(entry.owner, 'someone')
-  assert.equal(entry.category, 'github')
-  assert.equal(entry.description.en, 'A fancy plugin')
+  assert.equal(entry.category, 'themes')
+  assert.equal(entry.description.en, 'A fancy theme pack')
   assert.equal(entry.npm, null)
   assert.equal(entry.stars, 42)
   assert.equal(entry.install, 'dsh plugin --profile web add github:someone/dsh-fancy')
@@ -68,7 +68,9 @@ test('merge adds new repos and refreshes stars of known entries', () => {
   assert.equal(data.plugins.length, 2)
   assert.equal(data.plugins[0].stars, 120)
   assert.equal(data.plugins[1].name, 'dsh-new-hotness')
-  assert.equal(data.categories.github.zh, 'GitHub 发现')
+  assert.equal(data.plugins[1].category, 'other')
+  assert.equal(data.categories.other.zh, '其他')
+  assert.equal(data.categories.ui.zh, '界面增强')
   assert.equal(data.githubExtra, 1)
 })
 
@@ -104,7 +106,7 @@ test('merge skips entries missing owner or name and tolerates bad input', () => 
   assert.equal(data.plugins.length, 1)
 })
 
-test('buildRegistryFromRepos builds a sorted single-category registry', () => {
+test('buildRegistryFromRepos builds a sorted registry with category labels', () => {
   const data = topic.buildRegistryFromRepos([
     { name: 'small', owner: { login: 'a' }, stargazers_count: 3, description: 's', pushed_at: '2026-08-01T00:00:00Z' },
     { name: 'big', owner: { login: 'b' }, stargazers_count: 300, description: 'b', pushed_at: '2026-08-02T00:00:00Z' },
@@ -115,7 +117,9 @@ test('buildRegistryFromRepos builds a sorted single-category registry', () => {
   assert.equal(data.plugins[0].name, 'big')
   assert.equal(data.plugins[0].stars, 300)
   assert.equal(data.plugins[1].name, 'small')
-  assert.equal(data.categories.github.zh, 'GitHub 发现')
+  assert.equal(data.plugins[0].category, 'other')
+  assert.equal(data.categories.other.zh, '其他')
+  assert.equal(data.categories.markets.zh, '插件市场与管理')
   assert.equal(data.count, 2)
   assert.match(data.updated, /^\d{4}-\d{2}-\d{2}$/)
 })

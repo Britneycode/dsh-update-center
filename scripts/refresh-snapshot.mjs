@@ -13,6 +13,7 @@ import { dirname, join } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { buildRegistryFromRepos, mergeGithubTopic } from '../src/github-topic.mjs'
 import { applyNpmMapping } from '../src/npm-mapping.mjs'
+import { applyCategories, flattenAwesomeMap } from '../src/categorize.mjs'
 
 const root = join(dirname(fileURLToPath(import.meta.url)), '..')
 const SELF_REPO = 'Britneycode/dsh-update-center'
@@ -101,6 +102,8 @@ const pinnedRepos = [
   selfRepo,
 ]
 const merged = mergeGithubTopic(data, [...topicRepos, ...pinnedRepos])
+const awesomeMap = flattenAwesomeMap(JSON.parse(await readFile(join(root, 'data', 'awesome-categories.json'), 'utf8')))
+const { bySource } = applyCategories(data, awesomeMap)
 const npmObjects = await fetchNpmSearchObjects()
 const mapped = applyNpmMapping(data, npmObjects)
 if (data.plugins.length > MAX_ENTRIES) {
@@ -116,3 +119,4 @@ await writeFile(join(root, 'data', 'registry-snapshot.json'), text, 'utf8')
 await writeFile(join(root, 'data', 'extra-plugins.json'), JSON.stringify(pinnedRepos, null, 1) + '\n', 'utf8')
 const base = existing ? `存量 ${existing.plugins.length}` : '新建'
 console.log(`plugins.json 已生成：${base} + 本轮扫描新增 ${merged.added}（含去重）+ npm 映射 ${mapped} = 共 ${data.plugins.length} 条（上限 ${MAX_ENTRIES}）`)
+console.log(`分类来源：awesome 清单 ${bySource.awesome} / 关键词 ${bySource.keyword} / 未分类 ${bySource.other}`)

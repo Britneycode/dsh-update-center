@@ -27,6 +27,7 @@ import { homedir } from 'node:os'
 import { fileURLToPath } from 'node:url'
 import { runCommandAsync } from './run-command.mjs'
 import { mergeGithubTopic } from './github-topic.mjs'
+import { applyCategories, flattenAwesomeMap } from './categorize.mjs'
 import { applyNpmMapping } from './npm-mapping.mjs'
 
 export const name = 'dsh-update-center'
@@ -579,7 +580,7 @@ export function apply(ctx: AppContext, config: Config): void {
   }
 
   /** 后台 GitHub 主题扫描：与当前注册表按 owner/name 去重合并（重复条目仅刷新
-   *  星标，新条目追加进「GitHub 发现」分类），并用 npm 关键词搜索补包名映射；
+   *  星标，新条目按功能分类追加），并用 npm 关键词搜索补包名映射；
    *  结果写回本地磁盘缓存。 */
   async function enrichRegistryWithGithubTopics(): Promise<void> {
     if (githubTopicScanRunning || !registryCache) return
@@ -588,6 +589,9 @@ export function apply(ctx: AppContext, config: Config): void {
       const repos = await fetchGithubTopicRepos()
       if (!repos.length) return
       const { added, starsUpdated } = mergeGithubTopic(registryCache.data, repos)
+      if (added > 0) {
+        applyCategories(registryCache.data, getAwesomeMap())
+      }
       const npmObjects = await fetchNpmSearchObjects()
       const mapped = applyNpmMapping(registryCache.data, npmObjects)
       if (!added && !starsUpdated && !mapped) return
@@ -609,6 +613,24 @@ export function apply(ctx: AppContext, config: Config): void {
     mergeGithubTopic(data, extras as any[])
   }
 
+  /** 装载兜底：任何来源的清单（含旧格式磁盘缓存/快照）统一并入常驻条目并
+   *  重算功能分类，保证市场永远按 awesome-dsh-plugin 分类体系展示——即使
+   *  网络不可用、缓存还是旧版「按来源分类」的格式，也能当场自愈。 */
+  function finalizeRegistry(data: any): void {
+    applyBundledExtras(data)
+    applyCategories(data, getAwesomeMap())
+  }
+
+  /** awesome-dsh-plugin 精选清单的 仓库→分类 映射（随包 data 文件，懒加载一次）。 */
+  let awesomeMapCache: Record<string, string> | null = null
+  function getAwesomeMap(): Record<string, string> {
+    if (!awesomeMapCache) {
+      const raw = readJson(join(pluginRoot, 'data', 'awesome-categories.json'))
+      awesomeMapCache = flattenAwesomeMap(raw)
+    }
+    return awesomeMapCache
+  }
+
   /** 缓存有效期内直接使用；过期自动拉网（含备源）；网络不可用回退缓存与内置快照。 */
   async function loadRegistry(force: boolean): Promise<{ ok: boolean; source: string; data: any }> {
     if (!force && registryCache) return { ok: true, source: registryCache.source, data: registryCache.data }
@@ -616,13 +638,13 @@ export function apply(ctx: AppContext, config: Config): void {
     const diskFetchedAt = typeof disk?.fetchedAt === 'number' ? disk.fetchedAt : 0
     const diskUsable = !!(disk?.data && validRegistry(disk.data))
     if (!force && diskUsable && Date.now() - diskFetchedAt < REGISTRY_TTL_MS) {
-      applyBundledExtras(disk.data)
+      finalizeRegistry(disk.data)
       registryCache = { at: diskFetchedAt, source: 'disk', data: disk.data }
       return { ok: true, source: 'disk', data: disk.data }
     }
     const network = await fetchRegistryFromNetwork()
     if (network) {
-      applyBundledExtras(network.data)
+      finalizeRegistry(network.data)
       try {
         writeJsonAtomic(registryCacheFile, { fetchedAt: Date.now(), data: network.data })
       } catch { /* 磁盘缓存写失败不影响内存使用 */ }
@@ -631,13 +653,13 @@ export function apply(ctx: AppContext, config: Config): void {
       return { ok: true, source: network.source, data: network.data }
     }
     if (diskUsable) {
-      applyBundledExtras(disk.data)
+      finalizeRegistry(disk.data)
       registryCache = { at: diskFetchedAt, source: 'disk', data: disk.data }
       return { ok: true, source: 'disk', data: disk.data }
     }
     const snapshot = readJson(join(pluginRoot, 'data', 'registry-snapshot.json'))
     if (validRegistry(snapshot)) {
-      applyBundledExtras(snapshot)
+      finalizeRegistry(snapshot)
       registryCache = { at: Date.now(), source: 'snapshot', data: snapshot }
       return { ok: true, source: 'snapshot', data: snapshot }
     }

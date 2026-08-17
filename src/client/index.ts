@@ -530,6 +530,18 @@ function buildPanel(): HTMLElement {
       const description = entry.description?.zh || entry.description?.en || ''
       if (description) identity.append(el('div', 'uc-desc', String(description)))
       const tags = el('div', 'uc-tags')
+      if (entry.category && marketData?.categories?.[entry.category]) {
+        const catLabel = marketData.categories[entry.category]
+        const catTag = el('button', 'uc-tag cat', String(catLabel?.zh || catLabel?.en || entry.category))
+        catTag.type = 'button'
+        catTag.title = '按此分类筛选'
+        catTag.addEventListener('click', () => {
+          marketCategory = String(entry.category)
+          categorySelect.value = marketCategory
+          renderMarket()
+        })
+        tags.append(catTag)
+      }
       if (entry.owner) tags.append(el('span', 'uc-meta', String(entry.owner)))
       if (entry.installMode === 'manual') tags.append(el('span', 'uc-tag preset', '套装'))
       else if (entry.npm) tags.append(el('span', 'uc-tag npm', 'npm'))
@@ -584,7 +596,8 @@ function buildPanel(): HTMLElement {
     if (force) setBusy(true, refreshButton, '刷新中…')
     if (!silent) say('正在加载插件市场清单…', 'info')
     try {
-      const data = await fetchJson(force ? '/market/refresh' : '/market')
+      // 刷新会触发服务端网络拉取并重写缓存（有副作用），与服务端一致走 POST
+      const data = await fetchJson(force ? '/market/refresh' : '/market', force ? { method: 'POST' } : undefined)
       if (!data?.ok) throw new Error(data?.error || '清单加载失败')
       marketData = data
       marketVisibleLimit = MARKET_PAGE_SIZE

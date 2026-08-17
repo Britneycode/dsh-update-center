@@ -5,17 +5,19 @@
  * 扫描结果构造成 registry 形状，常驻条目按 owner/name 去重并入。
  */
 
+import { CATEGORY_LABELS, classifyPlugin } from './categorize.mjs'
+
 export function githubRepoToEntry(repo) {
   const owner = repo?.owner?.login ?? ''
   const name = repo?.name ?? ''
   const description = typeof repo?.description === 'string' ? repo.description : ''
   const manualInstall = repo?.installMode === 'manual'
-  return {
+  const entry = {
     name,
     owner,
     url: typeof repo?.html_url === 'string' ? repo.html_url : `https://github.com/${owner}/${name}`,
     page: '',
-    category: 'github',
+    category: 'other',
     description: {
       en: description,
       zh: typeof repo?.descriptionZh === 'string' ? repo.descriptionZh : '',
@@ -29,12 +31,14 @@ export function githubRepoToEntry(repo) {
       manualNote: typeof repo?.manualNote === 'string' ? repo.manualNote : '',
     } : {}),
   }
+  entry.category = classifyPlugin(entry)
+  return entry
 }
 
 /**
  * 把 GitHub 扫描结果合并进 registry 数据（原地修改）。
- * 匹配键为 owner/name（忽略大小写）；已知条目只更新星标，新条目追加并标记
- * github 分类。返回 { added, starsUpdated }。
+ * 匹配键为 owner/name（忽略大小写）；已知条目只更新星标，新条目按功能分类
+ * 追加。返回 { added, starsUpdated }。
  */
 export function mergeGithubTopic(data, repos) {
   if (!data || !Array.isArray(data.plugins) || !Array.isArray(repos)) return { added: 0, starsUpdated: 0 }
@@ -66,16 +70,12 @@ export function mergeGithubTopic(data, repos) {
     index.set(key, entry)
     added += 1
   }
-  if (added > 0) {
-    const categories = { ...(data.categories ?? {}) }
-    if (!categories.github) categories.github = { en: 'GitHub discovered', zh: 'GitHub 发现' }
-    data.categories = categories
-  }
+  if (added > 0) data.categories = { ...CATEGORY_LABELS }
   data.githubExtra = added
   return { added, starsUpdated }
 }
 
-/** 把 GitHub 扫描结果构建成完整 registry 形状（单分类 GitHub 发现，按星标降序）。 */
+/** 把 GitHub 扫描结果构建成完整 registry 形状（按功能分类，星标降序）。 */
 export function buildRegistryFromRepos(repos) {
   const entries = (Array.isArray(repos) ? repos : [])
     .filter((repo) => repo && repo.fork !== true)
@@ -88,7 +88,7 @@ export function buildRegistryFromRepos(repos) {
     source: 'GitHub topic:dsh-plugin',
     updated: new Date().toISOString().slice(0, 10),
     count: entries.length,
-    categories: { github: { en: 'GitHub discovered', zh: 'GitHub 发现' } },
+    categories: { ...CATEGORY_LABELS },
     plugins: entries,
   }
 }

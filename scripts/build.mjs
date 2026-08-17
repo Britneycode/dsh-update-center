@@ -92,7 +92,7 @@ if (mode === '--typecheck') {
   runNode(tsc, ['-p', 'tsconfig.json'])
   runNode(tsdown, [])
   // host 产物由 tsc 逐文件转译（不打包），共享的 .mjs 模块需随产物分发。
-  for (const shared of ['run-command.mjs', 'github-topic.mjs', 'npm-mapping.mjs']) {
+  for (const shared of ['run-command.mjs', 'github-topic.mjs', 'npm-mapping.mjs', 'categorize.mjs']) {
     copyFileSync(join(root, 'src', shared), join(root, 'lib', shared))
   }
 } else {
