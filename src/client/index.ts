@@ -46,7 +46,7 @@ const styles = `
 .uc-meta{gap:6px;color:var(--dsw-alias-label-tertiary);font-size:11px;min-width:0;flex-wrap:wrap}
 .uc-path{display:block;min-width:0;max-width:460px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .uc-actions{gap:8px;justify-content:flex-end;flex-wrap:wrap}
-.uc-btn{min-height:32px;border:1px solid transparent;border-radius:6px;padding:6px 12px;background:#2878d0;color:#fff;font:inherit;font-size:12px;cursor:pointer;white-space:nowrap}
+.uc-btn{min-height:32px;border:1px solid transparent;border-radius:6px;padding:6px 12px;background:#2878d0;color:#fff;font:inherit;font-size:12px;cursor:pointer;white-space:nowrap;text-decoration:none}
 .uc-btn.secondary{background:transparent;border-color:var(--dsw-alias-border-l2);color:var(--dsw-alias-label-secondary)}
 .uc-btn.danger{background:transparent;border-color:rgba(210,58,58,.45);color:#d23a3a}
 .uc-btn:disabled{opacity:.45;cursor:not-allowed}
@@ -562,7 +562,7 @@ function buildPanel(): HTMLElement {
       const actions = el('div', 'uc-actions')
       if (entry.installMode === 'manual') {
         status.append(badge('手动安装', 'muted'))
-        const guideLink = el('a', 'uc-btn secondary', '安装说明')
+        const guideLink = el('a', 'uc-btn', '安装说明')
         guideLink.href = String(entry.url)
         guideLink.target = '_blank'
         guideLink.rel = 'noreferrer'
