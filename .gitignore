@@ -2,3 +2,5 @@ node_modules/
 .mimosa/
 *.tsbuildinfo
 *.tgz
+# sourcemap 是构建时产物且每次重建内容非确定（含时间戳/路径元数据），不入库
+*.map

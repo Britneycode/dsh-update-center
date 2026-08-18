@@ -1,1 +1,4 @@
 * text=auto
+# 构建产物（lib/）统一 LF：消除 CRLF/LF 反复警告与行尾噪音 diff。
+# *.map 已移出版本库（sourcemap 每次重建内容非确定，见 .gitignore）。
+lib/** text eol=lf
