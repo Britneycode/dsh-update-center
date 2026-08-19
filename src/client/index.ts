@@ -121,8 +121,11 @@ function buildPanel(): HTMLElement {
   const updateAllButton = el('button', 'uc-btn', '全部更新')
   updateAllButton.type = 'button'
   updateAllButton.disabled = true
+  const restartButton = el('button', 'uc-btn secondary', '重启 dsh')
+  restartButton.type = 'button'
+  restartButton.title = '更新完成后一键重启 dsh web（当前会话会中断）'
   const toolbarActions = el('div', 'uc-actions')
-  toolbarActions.append(checkButton, updateAllButton)
+  toolbarActions.append(checkButton, updateAllButton, restartButton)
   toolbar.append(heading, toolbarActions)
 
   // ── Tab 切换：已安装 / 插件市场 ──
@@ -182,7 +185,7 @@ function buildPanel(): HTMLElement {
   message.style.display = 'none'
   page.append(toolbar, tabs, installedView, marketView, message)
 
-  const buttons = new Set<HTMLButtonElement>([checkButton, updateAllButton])
+  const buttons = new Set<HTMLButtonElement>([checkButton, updateAllButton, restartButton])
   let checked = false
   let activeJobId = ''
   let marketData: any = null
@@ -629,6 +632,12 @@ function buildPanel(): HTMLElement {
     renderPlugins(Array.isArray(data?.plugins) ? data.plugins : [])
     updateSummary(data)
     updateAllButton.disabled = !checked || pluginUpdateCount(data?.plugins ?? []) === 0
+    // 有更新任务执行时不建议重启（会中断后台任务），服务端同样拒绝
+    const job = data?.job ?? {}
+    restartButton.disabled = job.status === 'queued' || job.status === 'running'
+    restartButton.title = restartButton.disabled
+      ? '有更新任务正在执行，请等待完成后再重启'
+      : '更新完成后一键重启 dsh web（当前会话会中断）'
   }
 
   function refreshStatus(showJob = true, fresh = false): Promise<void> {
@@ -664,6 +673,27 @@ function buildPanel(): HTMLElement {
   })
   refreshButton.addEventListener('click', () => void loadMarket(true, false))
   bindAction(updateAllButton, '/update-all', {}, '把所有可更新的插件（不含 dsh 本体）排成一个后台批量任务串行执行，单个失败不影响其余。任务完成后再重启，是否继续？', '正在检查并创建批量更新任务…')
+
+  restartButton.addEventListener('click', () => {
+    const job = lastStatusData?.job ?? {}
+    const active = job.status === 'queued' || job.status === 'running'
+    const confirmText = active
+      ? '当前有更新任务正在执行，重启会中断它（后台任务可能未完成）。确定现在重启 dsh web 吗？'
+      : '重启 dsh web？当前会话会中断，重启完成后请刷新页面。'
+    if (!window.confirm(confirmText)) return
+    setBusy(true, restartButton, '重启中…')
+    say('正在下发重启指令…', 'info')
+    fetchJson('/restart', { method: 'POST', body: '{}' })
+      .then((data) => {
+        setBusy(false, restartButton)
+        if (!data?.ok) throw new Error(data?.result || data?.error || '重启失败')
+        say('重启指令已下发，dsh 即将重启，请稍后刷新页面。', 'ok')
+      })
+      .catch((error) => {
+        setBusy(false, restartButton)
+        say('重启请求失败：' + String(error), 'err')
+      })
+  })
 
   checkButton.addEventListener('click', () => {
     setBusy(true, checkButton, '检查中…')

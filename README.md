@@ -69,6 +69,7 @@ dsh plugin --profile web add link:<本插件目录>
 - dsh 或本地插件存在未提交改动时停止更新，避免覆盖本地工作。
 - 任一步骤失败都会返回失败阶段；不会把依赖安装或构建失败显示成成功。
 - 更新写入磁盘后明确提示重启 dsh web。
+- 一键「重启 dsh」：工具条按钮以原进程完全相同的启动方式（execPath + execArgv + argv + cwd）自动重新拉起 dsh web，更新完插件后直接点即可，无需手动重启；有更新任务执行时会禁用并在服务端拒绝，避免中断后台任务。
 - POST 动作仅接受同源请求（Origin 与 Host 一致）。
 - `Start-DSH.ps1` 会等待后台更新完成再启动，`Stop-DSH.ps1` 不会结束更新 worker。
 
