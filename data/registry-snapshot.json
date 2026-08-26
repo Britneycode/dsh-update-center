@@ -2,8 +2,8 @@
  "name": "dsh-plugin-topic",
  "url": "https://github.com/search?q=topic%3Adsh-plugin",
  "source": "GitHub topic:dsh-plugin",
- "updated": "2026-08-25",
- "count": 774,
+ "updated": "2026-08-26",
+ "count": 783,
  "categories": {
   "ui": {
    "en": "UI Enhancements",
@@ -78,7 +78,7 @@
     "zh": ""
    },
    "npm": null,
-   "stars": 192689,
+   "stars": 195806,
    "install": "dsh plugin --profile web add github:deepseek-ai/deepseek-harness",
    "added": "2026-08-13"
   },
@@ -93,7 +93,7 @@
     "zh": ""
    },
    "npm": null,
-   "stars": 91157,
+   "stars": 91523,
    "install": "dsh plugin --profile web add github:nexu-io/open-design",
    "added": "2026-08-16"
   },
@@ -108,7 +108,7 @@
     "zh": ""
    },
    "npm": "dsh-plugin-reactive-resume",
-   "stars": 41676,
+   "stars": 41737,
    "install": "dsh plugin --profile web add dsh-plugin-reactive-resume",
    "added": "2026-08-16"
   },
@@ -123,7 +123,7 @@
     "zh": ""
    },
    "npm": null,
-   "stars": 33039,
+   "stars": 33343,
    "install": "dsh plugin --profile web add github:volcengine/OpenViking",
    "added": "2026-08-16"
   },
@@ -153,7 +153,7 @@
     "zh": ""
    },
    "npm": null,
-   "stars": 19827,
+   "stars": 19838,
    "install": "dsh plugin --profile web add github:Nagi-ovo/voyager",
    "added": "2026-08-16"
   },
@@ -168,7 +168,7 @@
     "zh": ""
    },
    "npm": "@tt-a1i/archify-dsh",
-   "stars": 15471,
+   "stars": 16453,
    "install": "dsh plugin --profile web add @tt-a1i/archify-dsh",
    "added": "2026-08-14"
   },
@@ -183,7 +183,7 @@
     "zh": ""
    },
    "npm": null,
-   "stars": 15851,
+   "stars": 18681,
    "install": "dsh plugin --profile web add github:freestylefly/awesome-gpt-image-2",
    "added": "2026-07-22"
   },
@@ -198,7 +198,7 @@
     "zh": ""
    },
    "npm": null,
-   "stars": 7790,
+   "stars": 7801,
    "install": "dsh plugin --profile web add github:YaoApp/yao",
    "added": "2026-08-15"
   },
@@ -228,7 +228,7 @@
     "zh": ""
    },
    "npm": null,
-   "stars": 5649,
+   "stars": 5667,
    "install": "dsh plugin --profile web add github:Q00/ouroboros",
    "added": "2026-08-16"
   },
@@ -243,7 +243,7 @@
     "zh": ""
    },
    "npm": null,
-   "stars": 5630,
+   "stars": 5654,
    "install": "dsh plugin --profile web add github:ZSeven-W/openpencil",
    "added": "2026-08-16"
   },
@@ -258,7 +258,7 @@
     "zh": ""
    },
    "npm": "deepseek-idesign",
-   "stars": 4757,
+   "stars": 4852,
    "install": "dsh plugin --profile web add deepseek-idesign",
    "added": "2026-08-16"
   },
@@ -273,7 +273,7 @@
     "zh": ""
    },
    "npm": null,
-   "stars": 3970,
+   "stars": 3974,
    "install": "dsh plugin --profile web add github:crafter-station/petdex",
    "added": "2026-08-14"
   },
@@ -288,7 +288,7 @@
     "zh": ""
    },
    "npm": "dsh-plugin-catalog",
-   "stars": 12343,
+   "stars": 12715,
    "install": "dsh plugin --profile web add dsh-plugin-catalog",
    "added": "2026-08-16"
   },
@@ -303,7 +303,7 @@
     "zh": ""
    },
    "npm": null,
-   "stars": 3563,
+   "stars": 3568,
    "install": "dsh plugin --profile web add github:strukto-ai/mirage",
    "added": "2026-08-16"
   },
@@ -333,7 +333,7 @@
     "zh": ""
    },
    "npm": null,
-   "stars": 3121,
+   "stars": 3126,
    "install": "dsh plugin --profile web add github:edison7009/EchoBird",
    "added": "2026-08-16"
   },
@@ -348,7 +348,7 @@
     "zh": ""
    },
    "npm": null,
-   "stars": 2986,
+   "stars": 2996,
    "install": "dsh plugin --profile web add github:foryourhealth111-pixel/Vibe-Skills",
    "added": "2026-08-11"
   },
@@ -378,7 +378,7 @@
     "zh": ""
    },
    "npm": null,
-   "stars": 3023,
+   "stars": 3041,
    "install": "dsh plugin --profile web add github:whiteguo233/OpenBiliClaw",
    "added": "2026-08-16"
   },
@@ -393,7 +393,7 @@
     "zh": ""
    },
    "npm": null,
-   "stars": 3747,
+   "stars": 3757,
    "install": "dsh plugin --profile web add github:xiaobright/dsh-anchored-standard",
    "added": "2026-08-15"
   },
@@ -408,7 +408,7 @@
     "zh": ""
    },
    "npm": null,
-   "stars": 3615,
+   "stars": 3669,
    "install": "dsh plugin --profile web add github:liustack/modlens",
    "added": "2026-08-16"
   },
@@ -423,7 +423,7 @@
     "zh": ""
    },
    "npm": null,
-   "stars": 1814,
+   "stars": 1818,
    "install": "dsh plugin --profile web add github:GCWing/BitFun",
    "added": "2026-08-16"
   },
@@ -438,7 +438,7 @@
     "zh": ""
    },
    "npm": null,
-   "stars": 2839,
+   "stars": 2920,
    "install": "dsh plugin --profile web add github:omdsh-dev/DSH-better-sidebar",
    "added": "2026-08-16"
   },
@@ -453,7 +453,7 @@
     "zh": ""
    },
    "npm": null,
-   "stars": 2498,
+   "stars": 2559,
    "install": "dsh plugin --profile web add github:ccch1mneyyy/dsh-TUI",
    "added": "2026-08-16"
   },
@@ -468,7 +468,7 @@
     "zh": ""
    },
    "npm": null,
-   "stars": 1414,
+   "stars": 1418,
    "install": "dsh plugin --profile web add github:hyhmrright/brooks-lint",
    "added": "2026-08-14"
   },
@@ -483,7 +483,7 @@
     "zh": ""
    },
    "npm": "@agentrq/dsh-plugin-agentrq",
-   "stars": 1088,
+   "stars": 1089,
    "install": "dsh plugin --profile web add @agentrq/dsh-plugin-agentrq",
    "added": "2026-08-16"
   },
@@ -513,7 +513,7 @@
     "zh": ""
    },
    "npm": null,
-   "stars": 1129,
+   "stars": 1133,
    "install": "dsh plugin --profile web add github:GanyuanRan/Aegis",
    "added": "2026-08-16"
   },
@@ -528,7 +528,7 @@
     "zh": ""
    },
    "npm": null,
-   "stars": 1383,
+   "stars": 1390,
    "install": "dsh plugin --profile web add github:AdamPlatin123/awesome-dsh-plugins",
    "added": "2026-08-16"
   },
@@ -543,7 +543,7 @@
     "zh": ""
    },
    "npm": null,
-   "stars": 1686,
+   "stars": 1719,
    "install": "dsh plugin --profile web add github:Small-tailqwq/dsh-deep-whale",
    "added": "2026-08-16"
   },
@@ -573,7 +573,7 @@
     "zh": ""
    },
    "npm": null,
-   "stars": 1103,
+   "stars": 1107,
    "install": "dsh plugin --profile web add github:Anionex/agent-vision-toolkit",
    "added": "2026-08-14"
   },
@@ -588,7 +588,7 @@
     "zh": ""
    },
    "npm": null,
-   "stars": 893,
+   "stars": 896,
    "install": "dsh plugin --profile web add github:freestylefly/wesight",
    "added": "2026-08-06"
   },
@@ -618,7 +618,7 @@
     "zh": ""
    },
    "npm": null,
-   "stars": 890,
+   "stars": 902,
    "install": "dsh plugin --profile web add github:xyTom/coding-tools-mcp",
    "added": "2026-08-15"
   },
@@ -633,7 +633,7 @@
     "zh": ""
    },
    "npm": null,
-   "stars": 697,
+   "stars": 698,
    "install": "dsh plugin --profile web add github:hellowind777/helloagents",
    "added": "2026-08-14"
   },
@@ -663,7 +663,7 @@
     "zh": ""
    },
    "npm": null,
-   "stars": 633,
+   "stars": 634,
    "install": "dsh plugin --profile web add github:sandbaseai/sandbase-harness",
    "added": "2026-08-15"
   },
@@ -678,7 +678,7 @@
     "zh": ""
    },
    "npm": null,
-   "stars": 612,
+   "stars": 616,
    "install": "dsh plugin --profile web add github:yejiming/MuseAI",
    "added": "2026-08-14"
   },
@@ -708,7 +708,7 @@
     "zh": ""
    },
    "npm": null,
-   "stars": 888,
+   "stars": 902,
    "install": "dsh plugin --profile web add github:0xsline/awesome-deepseek-harness",
    "added": "2026-08-16"
   },
@@ -723,7 +723,7 @@
     "zh": ""
    },
    "npm": null,
-   "stars": 573,
+   "stars": 575,
    "install": "dsh plugin --profile web add github:adoresever/graph-memory",
    "added": "2026-08-14"
   },
@@ -738,7 +738,7 @@
     "zh": ""
    },
    "npm": null,
-   "stars": 821,
+   "stars": 826,
    "install": "dsh plugin --profile web add github:Anionex/dsh-vision-toolkit",
    "added": "2026-08-16"
   },
@@ -753,7 +753,7 @@
     "zh": ""
    },
    "npm": null,
-   "stars": 519,
+   "stars": 523,
    "install": "dsh plugin --profile web add github:mnemon-dev/mnemon",
    "added": "2026-08-16"
   },
@@ -768,7 +768,7 @@
     "zh": ""
    },
    "npm": null,
-   "stars": 560,
+   "stars": 568,
    "install": "dsh plugin --profile web add github:Nagi-ovo/dsh-ads",
    "added": "2026-08-15"
   },
@@ -783,7 +783,7 @@
     "zh": ""
    },
    "npm": null,
-   "stars": 594,
+   "stars": 615,
    "install": "dsh plugin --profile web add github:superdesigndev/treg",
    "added": "2026-08-16"
   },
@@ -798,7 +798,7 @@
     "zh": ""
    },
    "npm": null,
-   "stars": 446,
+   "stars": 450,
    "install": "dsh plugin --profile web add github:superdesigndev/superdesign-skill",
    "added": "2026-08-15"
   },
@@ -813,7 +813,7 @@
     "zh": ""
    },
    "npm": "dshmarket",
-   "stars": 2230,
+   "stars": 2410,
    "install": "dsh plugin --profile web add dshmarket",
    "added": "2026-08-16"
   },
@@ -828,7 +828,7 @@
     "zh": ""
    },
    "npm": null,
-   "stars": 426,
+   "stars": 430,
    "install": "dsh plugin --profile web add github:Ikalus1988/MisakaNet",
    "added": "2026-08-16"
   },
@@ -843,7 +843,7 @@
     "zh": ""
    },
    "npm": "@nanmicoder/dsh-agent-teams",
-   "stars": 973,
+   "stars": 1023,
    "install": "dsh plugin --profile web add @nanmicoder/dsh-agent-teams",
    "added": "2026-08-15"
   },
@@ -858,7 +858,7 @@
     "zh": ""
    },
    "npm": "@yogsoth-ai/dare-dsh",
-   "stars": 382,
+   "stars": 384,
    "install": "dsh plugin --profile web add @yogsoth-ai/dare-dsh",
    "added": "2026-08-15"
   },
@@ -873,7 +873,7 @@
     "zh": ""
    },
    "npm": null,
-   "stars": 445,
+   "stars": 458,
    "install": "dsh plugin --profile web add github:EthanYoQ/AI-Novel-Writer",
    "added": "2026-08-16"
   },
@@ -888,7 +888,7 @@
     "zh": ""
    },
    "npm": null,
-   "stars": 372,
+   "stars": 374,
    "install": "dsh plugin --profile web add github:morluto/rea",
    "added": "2026-08-14"
   },
@@ -903,7 +903,7 @@
     "zh": ""
    },
    "npm": null,
-   "stars": 347,
+   "stars": 349,
    "install": "dsh plugin --profile web add github:PM-Shawn/Abu-Cowork",
    "added": "2026-08-14"
   },
@@ -918,7 +918,7 @@
     "zh": ""
    },
    "npm": null,
-   "stars": 332,
+   "stars": 333,
    "install": "dsh plugin --profile web add github:Minara-AI/minara-skills",
    "added": "2026-08-04"
   },
@@ -933,7 +933,7 @@
     "zh": ""
    },
    "npm": null,
-   "stars": 663,
+   "stars": 686,
    "install": "dsh plugin --profile web add github:Electricitysheep/dsh-handbook",
    "added": "2026-08-15"
   },
@@ -948,7 +948,7 @@
     "zh": ""
    },
    "npm": null,
-   "stars": 337,
+   "stars": 339,
    "install": "dsh plugin --profile web add github:linhay/harmony-next.skills",
    "added": "2026-08-15"
   },
@@ -978,7 +978,7 @@
     "zh": ""
    },
    "npm": null,
-   "stars": 357,
+   "stars": 371,
    "install": "dsh plugin --profile web add github:text2future/flowix",
    "added": "2026-08-16"
   },
@@ -993,7 +993,7 @@
     "zh": ""
    },
    "npm": null,
-   "stars": 964,
+   "stars": 978,
    "install": "dsh plugin --profile web add github:ysr666/dsh-vision-router",
    "added": "2026-08-16"
   },
@@ -1038,7 +1038,7 @@
     "zh": ""
    },
    "npm": null,
-   "stars": 247,
+   "stars": 249,
    "install": "dsh plugin --profile web add github:openma-ai/open-managed-agents",
    "added": "2026-08-16"
   },
@@ -1068,7 +1068,7 @@
     "zh": ""
    },
    "npm": null,
-   "stars": 292,
+   "stars": 299,
    "install": "dsh plugin --profile web add github:zhoushoujianwork/easyeda-agent",
    "added": "2026-08-14"
   },
@@ -1113,7 +1113,7 @@
     "zh": ""
    },
    "npm": null,
-   "stars": 273,
+   "stars": 279,
    "install": "dsh plugin --profile web add github:hust-open-atom-club/oh-dsh",
    "added": "2026-08-16"
   },
@@ -1128,7 +1128,7 @@
     "zh": ""
    },
    "npm": null,
-   "stars": 281,
+   "stars": 284,
    "install": "dsh plugin --profile web add github:vlln/whale-girl",
    "added": "2026-08-15"
   },
@@ -1143,7 +1143,7 @@
     "zh": ""
    },
    "npm": null,
-   "stars": 233,
+   "stars": 234,
    "install": "dsh plugin --profile web add github:huiliyi37/dsh-tianshu-tui",
    "added": "2026-08-16"
   },
@@ -1158,7 +1158,7 @@
     "zh": ""
    },
    "npm": null,
-   "stars": 434,
+   "stars": 458,
    "install": "dsh plugin --profile web add github:Lum1104/dsh-browser",
    "added": "2026-08-16"
   },
@@ -1188,7 +1188,7 @@
     "zh": ""
    },
    "npm": null,
-   "stars": 274,
+   "stars": 275,
    "install": "dsh plugin --profile web add github:bruc3van/awesome-dsh-plugin",
    "added": "2026-08-16"
   },
@@ -1203,7 +1203,7 @@
     "zh": ""
    },
    "npm": "dsh-engramory",
-   "stars": 171,
+   "stars": 174,
    "install": "dsh plugin --profile web add dsh-engramory",
    "added": "2026-08-16"
   },
@@ -1248,7 +1248,7 @@
     "zh": ""
    },
    "npm": null,
-   "stars": 213,
+   "stars": 217,
    "install": "dsh plugin --profile web add github:Nagi-ovo/dsh-visualize",
    "added": "2026-08-15"
   },
@@ -1263,7 +1263,7 @@
     "zh": ""
    },
    "npm": null,
-   "stars": 248,
+   "stars": 252,
    "install": "dsh plugin --profile web add github:Ariestar/sivtr",
    "added": "2026-08-16"
   },
@@ -1293,7 +1293,7 @@
     "zh": ""
    },
    "npm": null,
-   "stars": 327,
+   "stars": 336,
    "install": "dsh plugin --profile web add github:omdsh-dev/dsh-genui",
    "added": "2026-08-15"
   },
@@ -1338,7 +1338,7 @@
     "zh": ""
    },
    "npm": null,
-   "stars": 134,
+   "stars": 136,
    "install": "dsh plugin --profile web add github:drewnekota/cetus",
    "added": "2026-08-14"
   },
@@ -1353,7 +1353,7 @@
     "zh": ""
    },
    "npm": null,
-   "stars": 136,
+   "stars": 137,
    "install": "dsh plugin --profile web add github:liceses/dsh-gitbash-preset",
    "added": "2026-08-15"
   },
@@ -1368,7 +1368,7 @@
     "zh": ""
    },
    "npm": "@liustack/modsearch",
-   "stars": 260,
+   "stars": 278,
    "install": "dsh plugin --profile web add @liustack/modsearch",
    "added": "2026-08-15"
   },
@@ -1383,7 +1383,7 @@
     "zh": ""
    },
    "npm": null,
-   "stars": 110,
+   "stars": 111,
    "install": "dsh plugin --profile web add github:Sikao-Engine/KimiX",
    "added": "2026-08-16"
   },
@@ -1398,7 +1398,7 @@
     "zh": ""
    },
    "npm": null,
-   "stars": 242,
+   "stars": 247,
    "install": "dsh plugin --profile web add github:csyangwen/dsh-memory-evolve",
    "added": "2026-08-14"
   },
@@ -1413,7 +1413,7 @@
     "zh": ""
    },
    "npm": null,
-   "stars": 114,
+   "stars": 115,
    "install": "dsh plugin --profile web add github:Vladimir-Human/humanizer-ru",
    "added": "2026-08-16"
   },
@@ -1428,7 +1428,7 @@
     "zh": ""
    },
    "npm": null,
-   "stars": 509,
+   "stars": 524,
    "install": "dsh plugin --profile web add github:fufankeji/deepseek-harness-studio",
    "added": "2026-08-16"
   },
@@ -1458,7 +1458,7 @@
     "zh": ""
    },
    "npm": null,
-   "stars": 138,
+   "stars": 140,
    "install": "dsh plugin --profile web add github:ChisaAlter/Deepseek-Harness-Desktop",
    "added": "2026-08-16"
   },
@@ -1473,7 +1473,7 @@
     "zh": ""
    },
    "npm": null,
-   "stars": 220,
+   "stars": 224,
    "install": "dsh plugin --profile web add github:hikariming/dshfind",
    "added": "2026-08-15"
   },
@@ -1488,7 +1488,7 @@
     "zh": ""
    },
    "npm": null,
-   "stars": 151,
+   "stars": 158,
    "install": "dsh plugin --profile web add github:pulseaiclub/phi",
    "added": "2026-08-16"
   },
@@ -1503,7 +1503,7 @@
     "zh": ""
    },
    "npm": null,
-   "stars": 108,
+   "stars": 109,
    "install": "dsh plugin --profile web add github:taxueseek/argo",
    "added": "2026-08-13"
   },
@@ -1533,7 +1533,7 @@
     "zh": ""
    },
    "npm": null,
-   "stars": 89,
+   "stars": 90,
    "install": "dsh plugin --profile web add github:Leslie-SSS/seeWxapkg",
    "added": "2026-08-16"
   },
@@ -1548,7 +1548,7 @@
     "zh": ""
    },
    "npm": null,
-   "stars": 294,
+   "stars": 318,
    "install": "dsh plugin --profile web add github:Zhiyuan-Fan/Awesome-DeepSeek-Harness-Plugins",
    "added": "2026-08-15"
   },
@@ -1563,7 +1563,7 @@
     "zh": ""
    },
    "npm": null,
-   "stars": 148,
+   "stars": 150,
    "install": "dsh plugin --profile web add github:yjh051108/dsh-super-injector",
    "added": "2026-08-15"
   },
@@ -1578,7 +1578,7 @@
     "zh": ""
    },
    "npm": null,
-   "stars": 200,
+   "stars": 209,
    "install": "dsh plugin --profile web add github:libukai/awesome-deepseek-harness",
    "added": "2026-08-15"
   },
@@ -1608,7 +1608,7 @@
     "zh": ""
    },
    "npm": null,
-   "stars": 140,
+   "stars": 144,
    "install": "dsh plugin --profile web add github:bradeGithub/DSH-Plugins-Marketplace",
    "added": "2026-08-16"
   },
@@ -1623,7 +1623,7 @@
     "zh": ""
    },
    "npm": null,
-   "stars": 125,
+   "stars": 126,
    "install": "dsh plugin --profile web add github:ZSeven-W/dsh-noema",
    "added": "2026-08-15"
   },
@@ -1638,7 +1638,7 @@
     "zh": ""
    },
    "npm": null,
-   "stars": 382,
+   "stars": 385,
    "install": "dsh plugin --profile web add github:WYH66666666/DSH-Transparent-UI-Plugin",
    "added": "2026-08-16"
   },
@@ -1668,7 +1668,7 @@
     "zh": ""
    },
    "npm": null,
-   "stars": 129,
+   "stars": 131,
    "install": "dsh plugin --profile web add github:NanmiCoder/dsh-auto-mode",
    "added": "2026-08-15"
   },
@@ -1698,7 +1698,7 @@
     "zh": ""
    },
    "npm": null,
-   "stars": 70,
+   "stars": 71,
    "install": "dsh plugin --profile web add github:Jayden-X-L/forkprobe",
    "added": "2026-08-14"
   },
@@ -1773,7 +1773,7 @@
     "zh": ""
    },
    "npm": null,
-   "stars": 99,
+   "stars": 102,
    "install": "dsh plugin --profile web add github:omdsh-dev/dsh_workflow",
    "added": "2026-08-13"
   },
@@ -1803,7 +1803,7 @@
     "zh": ""
    },
    "npm": null,
-   "stars": 97,
+   "stars": 99,
    "install": "dsh plugin --profile web add github:omdsh-dev/dsh-annotation",
    "added": "2026-08-16"
   },
@@ -1818,7 +1818,7 @@
     "zh": ""
    },
    "npm": null,
-   "stars": 191,
+   "stars": 198,
    "install": "dsh plugin --profile web add github:Dominic789654/awesome-deepseek-harness",
    "added": "2026-08-16"
   },
@@ -1848,7 +1848,7 @@
     "zh": ""
    },
    "npm": null,
-   "stars": 125,
+   "stars": 127,
    "install": "dsh plugin --profile web add github:Ayase34/gal-view",
    "added": "2026-08-16"
   },
@@ -1863,7 +1863,7 @@
     "zh": ""
    },
    "npm": null,
-   "stars": 83,
+   "stars": 84,
    "install": "dsh plugin --profile web add github:pingfanfan/hello-dsh",
    "added": "2026-08-14"
   },
@@ -1893,7 +1893,7 @@
     "zh": ""
    },
    "npm": "dsh-desktop-base",
-   "stars": 188,
+   "stars": 193,
    "install": "dsh plugin --profile web add dsh-desktop-base",
    "added": "2026-08-16"
   },
@@ -1908,7 +1908,7 @@
     "zh": ""
    },
    "npm": "@anysearch/anysearch-dsh",
-   "stars": 247,
+   "stars": 269,
    "install": "dsh plugin --profile web add @anysearch/anysearch-dsh",
    "added": "2026-08-15"
   },
@@ -1923,7 +1923,7 @@
     "zh": ""
    },
    "npm": null,
-   "stars": 74,
+   "stars": 76,
    "install": "dsh plugin --profile web add github:omdsh-dev/dsh-notification",
    "added": "2026-08-16"
   },
@@ -1938,7 +1938,7 @@
     "zh": ""
    },
    "npm": "dsh-pet",
-   "stars": 400,
+   "stars": 418,
    "install": "dsh plugin --profile web add dsh-pet",
    "added": "2026-08-15"
   },
@@ -1953,7 +1953,7 @@
     "zh": ""
    },
    "npm": null,
-   "stars": 62,
+   "stars": 63,
    "install": "dsh plugin --profile web add github:c3ll256/dsh-toy",
    "added": "2026-08-14"
   },
@@ -1983,7 +1983,7 @@
     "zh": ""
    },
    "npm": null,
-   "stars": 62,
+   "stars": 63,
    "install": "dsh plugin --profile web add github:morluto/jacobian",
    "added": "2026-08-16"
   },
@@ -1998,7 +1998,7 @@
     "zh": ""
    },
    "npm": null,
-   "stars": 54,
+   "stars": 55,
    "install": "dsh plugin --profile web add github:LaplaceYoung/oh-my-dsh",
    "added": "2026-08-15"
   },
@@ -2013,7 +2013,7 @@
     "zh": ""
    },
    "npm": null,
-   "stars": 87,
+   "stars": 88,
    "install": "dsh plugin --profile web add github:oil-oil/dsh-vision",
    "added": "2026-08-14"
   },
@@ -2073,7 +2073,7 @@
     "zh": ""
    },
    "npm": "@mstar-harness/dsh",
-   "stars": 54,
+   "stars": 56,
    "install": "dsh plugin --profile web add @mstar-harness/dsh",
    "added": "2026-08-16"
   },
@@ -2088,7 +2088,7 @@
     "zh": ""
    },
    "npm": null,
-   "stars": 113,
+   "stars": 116,
    "install": "dsh plugin --profile web add github:beancookie/awesome-dsh-plugin",
    "added": "2026-08-16"
   },
@@ -2133,7 +2133,7 @@
     "zh": ""
    },
    "npm": null,
-   "stars": 78,
+   "stars": 81,
    "install": "dsh plugin --profile web add github:titanwings/dsh-automation",
    "added": "2026-08-14"
   },
@@ -2178,7 +2178,7 @@
     "zh": ""
    },
    "npm": null,
-   "stars": 1009,
+   "stars": 1037,
    "install": "dsh plugin --profile web add github:bowenliang123/dsh-context",
    "added": "2026-08-16"
   },
@@ -2193,7 +2193,7 @@
     "zh": ""
    },
    "npm": null,
-   "stars": 72,
+   "stars": 76,
    "install": "dsh plugin --profile web add github:wess09/DeepSeekHarnessDesktop",
    "added": "2026-08-13"
   },
@@ -2208,7 +2208,7 @@
     "zh": ""
    },
    "npm": "dsh-mnemon",
-   "stars": 206,
+   "stars": 222,
    "install": "dsh plugin --profile web add dsh-mnemon",
    "added": "2026-08-16"
   },
@@ -2223,7 +2223,7 @@
     "zh": ""
    },
    "npm": "dsh-chat-import",
-   "stars": 102,
+   "stars": 109,
    "install": "dsh plugin --profile web add dsh-chat-import",
    "added": "2026-08-16"
   },
@@ -2238,7 +2238,7 @@
     "zh": ""
    },
    "npm": "dsh-dafeiyu",
-   "stars": 252,
+   "stars": 259,
    "install": "dsh plugin --profile web add dsh-dafeiyu",
    "added": "2026-08-16"
   },
@@ -2268,7 +2268,7 @@
     "zh": ""
    },
    "npm": null,
-   "stars": 222,
+   "stars": 234,
    "install": "dsh plugin --profile web add github:kelai141/dsh-mobile-apk",
    "added": "2026-08-16"
   },
@@ -2283,7 +2283,7 @@
     "zh": ""
    },
    "npm": null,
-   "stars": 119,
+   "stars": 123,
    "install": "dsh plugin --profile web add github:Ychris12138/dsh-usage-stats",
    "added": "2026-08-15"
   },
@@ -2298,7 +2298,7 @@
     "zh": ""
    },
    "npm": null,
-   "stars": 75,
+   "stars": 76,
    "install": "dsh plugin --profile web add github:bruc3van/dsh-desktop",
    "added": "2026-08-16"
   },
@@ -2343,7 +2343,7 @@
     "zh": ""
    },
    "npm": "dsh-cost-meter",
-   "stars": 184,
+   "stars": 195,
    "install": "dsh plugin --profile web add dsh-cost-meter",
    "added": "2026-08-16"
   },
@@ -2358,7 +2358,7 @@
     "zh": ""
    },
    "npm": null,
-   "stars": 417,
+   "stars": 468,
    "install": "dsh plugin --profile web add github:Devin-AXIS/deepseek-design",
    "added": "2026-08-16"
   },
@@ -2373,7 +2373,7 @@
     "zh": ""
    },
    "npm": null,
-   "stars": 72,
+   "stars": 73,
    "install": "dsh plugin --profile web add github:like-study1/Oh-My-DSH",
    "added": "2026-08-16"
   },
@@ -2388,7 +2388,7 @@
     "zh": ""
    },
    "npm": null,
-   "stars": 89,
+   "stars": 93,
    "install": "dsh plugin --profile web add github:LayneChai/superpowers-dsh",
    "added": "2026-08-14"
   },
@@ -2403,7 +2403,7 @@
     "zh": ""
    },
    "npm": null,
-   "stars": 56,
+   "stars": 57,
    "install": "dsh plugin --profile web add github:multica-ai/dsh-multica-runtime",
    "added": "2026-08-14"
   },
@@ -2433,7 +2433,7 @@
     "zh": ""
    },
    "npm": null,
-   "stars": 43,
+   "stars": 44,
    "install": "dsh plugin --profile web add github:hanelalo/browser-bridge",
    "added": "2026-08-15"
   },
@@ -2448,7 +2448,7 @@
     "zh": ""
    },
    "npm": "@dsh-suite/plugin-manager",
-   "stars": 47,
+   "stars": 48,
    "install": "dsh plugin --profile web add @dsh-suite/plugin-manager",
    "added": "2026-08-16"
   },
@@ -2463,7 +2463,7 @@
     "zh": ""
    },
    "npm": null,
-   "stars": 109,
+   "stars": 112,
    "install": "dsh plugin --profile web add github:HanaAyane/dsh-reasoning-effort",
    "added": "2026-08-14"
   },
@@ -2583,7 +2583,7 @@
     "zh": ""
    },
    "npm": "dsh-find-plugin",
-   "stars": 89,
+   "stars": 98,
    "install": "dsh plugin --profile web add dsh-find-plugin",
    "added": "2026-08-14"
   },
@@ -2628,7 +2628,7 @@
     "zh": ""
    },
    "npm": null,
-   "stars": 164,
+   "stars": 168,
    "install": "dsh plugin --profile web add github:omdsh-dev/dsh-data-agent",
    "added": "2026-08-16"
   },
@@ -2643,7 +2643,7 @@
     "zh": ""
    },
    "npm": null,
-   "stars": 188,
+   "stars": 194,
    "install": "dsh plugin --profile web add github:Inference1/clarify-intent-and-establish-shared-understanding",
    "added": "2026-08-15"
   },
@@ -2658,7 +2658,7 @@
     "zh": ""
    },
    "npm": null,
-   "stars": 52,
+   "stars": 53,
    "install": "dsh plugin --profile web add github:whiteguo233/dsh-openbiliclaw",
    "added": "2026-08-15"
   },
@@ -2673,7 +2673,7 @@
     "zh": ""
    },
    "npm": null,
-   "stars": 44,
+   "stars": 45,
    "install": "dsh plugin --profile web add github:ChangedenCZD/dsh-minimal-turbo",
    "added": "2026-08-15"
   },
@@ -2703,7 +2703,7 @@
     "zh": ""
    },
    "npm": "@zenx0x/allinflash",
-   "stars": 43,
+   "stars": 46,
    "install": "dsh plugin --profile web add @zenx0x/allinflash",
    "added": "2026-08-14"
   },
@@ -2778,7 +2778,7 @@
     "zh": ""
    },
    "npm": null,
-   "stars": 93,
+   "stars": 98,
    "install": "dsh plugin --profile web add github:zuorn/Tydora",
    "added": "2026-08-16"
   },
@@ -2808,7 +2808,7 @@
     "zh": ""
    },
    "npm": null,
-   "stars": 41,
+   "stars": 42,
    "install": "dsh plugin --profile web add github:HuanLinOTO/dsh-plugin-mineru",
    "added": "2026-08-15"
   },
@@ -2838,7 +2838,7 @@
     "zh": ""
    },
    "npm": null,
-   "stars": 38,
+   "stars": 42,
    "install": "dsh plugin --profile web add github:keleus/deepseek-pet",
    "added": "2026-08-15"
   },
@@ -2868,7 +2868,7 @@
     "zh": ""
    },
    "npm": null,
-   "stars": 63,
+   "stars": 65,
    "install": "dsh plugin --profile web add github:Awu12277/dsh-stock-watch",
    "added": "2026-08-16"
   },
@@ -2883,7 +2883,7 @@
     "zh": ""
    },
    "npm": null,
-   "stars": 56,
+   "stars": 61,
    "install": "dsh plugin --profile web add github:cpj-dev/dsh-plugin-cc",
    "added": "2026-08-16"
   },
@@ -2928,7 +2928,7 @@
     "zh": ""
    },
    "npm": null,
-   "stars": 42,
+   "stars": 43,
    "install": "dsh plugin --profile web add github:Moeblack/dsh-message-edit",
    "added": "2026-08-14"
   },
@@ -2973,7 +2973,7 @@
     "zh": ""
    },
    "npm": "dsh-lark-channel",
-   "stars": 45,
+   "stars": 46,
    "install": "dsh plugin --profile web add dsh-lark-channel",
    "added": "2026-08-15"
   },
@@ -3003,7 +3003,7 @@
     "zh": ""
    },
    "npm": null,
-   "stars": 67,
+   "stars": 72,
    "install": "dsh plugin --profile web add github:THEWOLFWALKER/dsh-notifier",
    "added": "2026-08-16"
   },
@@ -3048,7 +3048,7 @@
     "zh": ""
    },
    "npm": null,
-   "stars": 26,
+   "stars": 32,
    "install": "dsh plugin --profile web add github:bugmaker2/dsh-plugin-template",
    "added": "2026-08-14"
   },
@@ -3093,7 +3093,7 @@
     "zh": ""
    },
    "npm": null,
-   "stars": 29,
+   "stars": 31,
    "install": "dsh plugin --profile web add github:Anionex/dsh-computer-use",
    "added": "2026-08-14"
   },
@@ -3138,7 +3138,7 @@
     "zh": ""
    },
    "npm": null,
-   "stars": 315,
+   "stars": 360,
    "install": "dsh plugin --profile web add github:whitelonng/dshcode",
    "added": "2026-08-16"
   },
@@ -3183,7 +3183,7 @@
     "zh": ""
    },
    "npm": "dsh-dream-skin",
-   "stars": 102,
+   "stars": 112,
    "install": "dsh plugin --profile web add dsh-dream-skin",
    "added": "2026-08-15"
   },
@@ -3228,7 +3228,7 @@
     "zh": ""
    },
    "npm": null,
-   "stars": 96,
+   "stars": 103,
    "install": "dsh plugin --profile web add github:Mars-Sea/dsh-commandcode-provider",
    "added": "2026-08-16"
   },
@@ -3258,7 +3258,7 @@
     "zh": ""
    },
    "npm": "dsh-emoji",
-   "stars": 39,
+   "stars": 41,
    "install": "dsh plugin --profile web add dsh-emoji",
    "added": "2026-08-15"
   },
@@ -3273,7 +3273,7 @@
     "zh": ""
    },
    "npm": null,
-   "stars": 22,
+   "stars": 23,
    "install": "dsh plugin --profile web add github:LoserFox/distill",
    "added": "2026-08-13"
   },
@@ -3333,7 +3333,7 @@
     "zh": ""
    },
    "npm": null,
-   "stars": 75,
+   "stars": 80,
    "install": "dsh plugin --profile web add github:dhicoc/dsh-reverse-skill",
    "added": "2026-08-16"
   },
@@ -3438,7 +3438,7 @@
     "zh": ""
    },
    "npm": "dsh-client-auto-continue",
-   "stars": 37,
+   "stars": 39,
    "install": "dsh plugin --profile web add dsh-client-auto-continue",
    "added": "2026-08-16"
   },
@@ -3468,7 +3468,7 @@
     "zh": ""
    },
    "npm": null,
-   "stars": 26,
+   "stars": 35,
    "install": "dsh plugin --profile web add github:PivotStackIntelligence/dsh-github",
    "added": "2026-08-14"
   },
@@ -3498,7 +3498,7 @@
     "zh": ""
    },
    "npm": null,
-   "stars": 59,
+   "stars": 61,
    "install": "dsh plugin --profile web add github:mexiaosqwq/dsh-web-mobile",
    "added": "2026-08-15"
   },
@@ -3588,7 +3588,7 @@
     "zh": ""
    },
    "npm": null,
-   "stars": 34,
+   "stars": 40,
    "install": "dsh plugin --profile web add github:zhuiyueya/dsh-im-gateway",
    "added": "2026-08-16"
   },
@@ -3618,7 +3618,7 @@
     "zh": ""
    },
    "npm": null,
-   "stars": 43,
+   "stars": 48,
    "install": "dsh plugin --profile web add github:Tyan66666/billion-context-dsh",
    "added": "2026-08-16"
   },
@@ -3648,7 +3648,7 @@
     "zh": ""
    },
    "npm": null,
-   "stars": 36,
+   "stars": 37,
    "install": "dsh plugin --profile web add github:Aik358/dsh-auto-memory",
    "added": "2026-08-16"
   },
@@ -3678,7 +3678,7 @@
     "zh": ""
    },
    "npm": "dsh-file-review",
-   "stars": 24,
+   "stars": 26,
    "install": "dsh plugin --profile web add dsh-file-review",
    "added": "2026-08-15"
   },
@@ -3693,7 +3693,7 @@
     "zh": ""
    },
    "npm": null,
-   "stars": 70,
+   "stars": 72,
    "install": "dsh plugin --profile web add github:2BingLing/dsh-market",
    "added": "2026-08-16"
   },
@@ -3722,9 +3722,9 @@
     "en": "dsh-lark-bot：把 DeepSeek Harness (dsh) 桥接进飞书/Lark 的 bot：流式卡片、项目工作区、并行任务、多角色 Agent、跨会话通知、对话内模型/密钥管理与安全网守护（dsh 崩溃后飞书仍可自救）。A bridge bot connecting DeepSeek Harness (dsh) into Feishu/Lark: streaming cards, workspaces, parallel tasks, multi-role agents, cross-session notify, in-chat model/key management, and a safety-net guardian.",
     "zh": ""
    },
-   "npm": "dsh-feishu-bot",
-   "stars": 33,
-   "install": "dsh plugin --profile web add dsh-feishu-bot",
+   "npm": "dsh-lark-bot",
+   "stars": 34,
+   "install": "dsh plugin --profile web add dsh-lark-bot",
    "added": "2026-08-16"
   },
   {
@@ -3768,7 +3768,7 @@
     "zh": ""
    },
    "npm": null,
-   "stars": 22,
+   "stars": 23,
    "install": "dsh plugin --profile web add github:bill9109/dsh-web-ui-notify",
    "added": "2026-08-14"
   },
@@ -3783,7 +3783,7 @@
     "zh": ""
    },
    "npm": null,
-   "stars": 44,
+   "stars": 50,
    "install": "dsh plugin --profile web add github:modusensus/dsh-mneme",
    "added": "2026-08-16"
   },
@@ -3858,7 +3858,7 @@
     "zh": ""
    },
    "npm": null,
-   "stars": 27,
+   "stars": 28,
    "install": "dsh plugin --profile web add github:dsh-tui/dsh-tui",
    "added": "2026-08-14"
   },
@@ -4128,7 +4128,7 @@
     "zh": ""
    },
    "npm": "pi2dsh",
-   "stars": 159,
+   "stars": 163,
    "install": "dsh plugin --profile web add pi2dsh",
    "added": "2026-08-16"
   },
@@ -4143,7 +4143,7 @@
     "zh": ""
    },
    "npm": null,
-   "stars": 22,
+   "stars": 23,
    "install": "dsh plugin --profile web add github:ZRui-C/dsh-computer-use",
    "added": "2026-08-14"
   },
@@ -4188,7 +4188,7 @@
     "zh": ""
    },
    "npm": "dsh-tokenledger",
-   "stars": 146,
+   "stars": 157,
    "install": "dsh plugin --profile web add dsh-tokenledger",
    "added": "2026-08-15"
   },
@@ -4248,7 +4248,7 @@
     "zh": ""
    },
    "npm": null,
-   "stars": 29,
+   "stars": 30,
    "install": "dsh plugin --profile web add github:Links2008/DeepSeek-Harness-Desktop",
    "added": "2026-08-16"
   },
@@ -4263,7 +4263,7 @@
     "zh": ""
    },
    "npm": null,
-   "stars": 36,
+   "stars": 38,
    "install": "dsh plugin --profile web add github:Nyasers/dsh-hanako",
    "added": "2026-08-16"
   },
@@ -4353,7 +4353,7 @@
     "zh": ""
    },
    "npm": null,
-   "stars": 27,
+   "stars": 28,
    "install": "dsh plugin --profile web add github:cosyncing/cosyncing",
    "added": "2026-08-16"
   },
@@ -4428,7 +4428,7 @@
     "zh": ""
    },
    "npm": null,
-   "stars": 47,
+   "stars": 48,
    "install": "dsh plugin --profile web add github:Yan-Zero/dsh-codex",
    "added": "2026-08-16"
   },
@@ -4443,7 +4443,7 @@
     "zh": ""
    },
    "npm": "dsh-science",
-   "stars": 27,
+   "stars": 28,
    "install": "dsh plugin --profile web add dsh-science",
    "added": "2026-08-16"
   },
@@ -4518,7 +4518,7 @@
     "zh": ""
    },
    "npm": null,
-   "stars": 78,
+   "stars": 79,
    "install": "dsh plugin --profile web add github:AITabby/dockyard-dsh",
    "added": "2026-08-15"
   },
@@ -4548,7 +4548,7 @@
     "zh": ""
    },
    "npm": "dsh-codex-connect",
-   "stars": 43,
+   "stars": 47,
    "install": "dsh plugin --profile web add dsh-codex-connect",
    "added": "2026-08-16"
   },
@@ -4563,7 +4563,7 @@
     "zh": ""
    },
    "npm": "dsh-plugin-genui",
-   "stars": 104,
+   "stars": 106,
    "install": "dsh plugin --profile web add dsh-plugin-genui",
    "added": "2026-08-16"
   },
@@ -4608,7 +4608,7 @@
     "zh": ""
    },
    "npm": null,
-   "stars": 34,
+   "stars": 39,
    "install": "dsh plugin --profile web add github:runzhliu/deepseek-harness-docker",
    "added": "2026-08-14"
   },
@@ -4668,7 +4668,7 @@
     "zh": ""
    },
    "npm": null,
-   "stars": 77,
+   "stars": 86,
    "install": "dsh plugin --profile web add github:chokwinlee/deepseek-harness-desktop",
    "added": "2026-08-16"
   },
@@ -4743,7 +4743,7 @@
     "zh": ""
    },
    "npm": null,
-   "stars": 36,
+   "stars": 38,
    "install": "dsh plugin --profile web add github:songyang0603/ds-spec-loop",
    "added": "2026-08-15"
   },
@@ -4773,7 +4773,7 @@
     "zh": ""
    },
    "npm": null,
-   "stars": 68,
+   "stars": 77,
    "install": "dsh plugin --profile web add github:Hilbert-beinghappy/seektty",
    "added": "2026-08-16"
   },
@@ -4878,7 +4878,7 @@
     "zh": ""
    },
    "npm": null,
-   "stars": 41,
+   "stars": 44,
    "install": "dsh plugin --profile web add github:anweat/dsh-web-search-pro",
    "added": "2026-08-14"
   },
@@ -4968,7 +4968,7 @@
     "zh": ""
    },
    "npm": null,
-   "stars": 183,
+   "stars": 189,
    "install": "dsh plugin --profile web add github:imsai-sh/awesome-deepseek-harness-plugins",
    "added": "2026-08-16"
   },
@@ -4983,7 +4983,7 @@
     "zh": ""
    },
    "npm": "@xmanrui/dsh-im",
-   "stars": 794,
+   "stars": 855,
    "install": "dsh plugin --profile web add @xmanrui/dsh-im",
    "added": "2026-08-16"
   },
@@ -5043,7 +5043,7 @@
     "zh": ""
    },
    "npm": null,
-   "stars": 53,
+   "stars": 55,
    "install": "dsh plugin --profile web add github:01Virex/dsh-status-rotator",
    "added": "2026-08-15"
   },
@@ -5163,7 +5163,7 @@
     "zh": ""
    },
    "npm": null,
-   "stars": 31,
+   "stars": 33,
    "install": "dsh plugin --profile web add github:ChenRuoT/dsh-sidebar-qa",
    "added": "2026-08-15"
   },
@@ -5193,7 +5193,7 @@
     "zh": ""
    },
    "npm": null,
-   "stars": 64,
+   "stars": 65,
    "install": "dsh plugin --profile web add github:eri64/dsh-claude-ux",
    "added": "2026-08-15"
   },
@@ -5388,7 +5388,7 @@
     "zh": ""
    },
    "npm": null,
-   "stars": 21,
+   "stars": 23,
    "install": "dsh plugin --profile web add github:Lxiayu/DshCockpit",
    "added": "2026-08-16"
   },
@@ -5418,7 +5418,7 @@
     "zh": ""
    },
    "npm": null,
-   "stars": 22,
+   "stars": 23,
    "install": "dsh plugin --profile web add github:techysy/deepseek-harness-fnos",
    "added": "2026-08-16"
   },
@@ -5478,7 +5478,7 @@
     "zh": ""
    },
    "npm": null,
-   "stars": 64,
+   "stars": 74,
    "install": "dsh plugin --profile web add github:Stormycry-cryp/dsh-AuthInOne",
    "added": "2026-08-15"
   },
@@ -5583,7 +5583,7 @@
     "zh": ""
    },
    "npm": null,
-   "stars": 49,
+   "stars": 50,
    "install": "dsh plugin --profile web add github:Fishsb/dsh-prompt-enhancer",
    "added": "2026-08-16"
   },
@@ -5928,7 +5928,7 @@
     "zh": ""
    },
    "npm": null,
-   "stars": 20,
+   "stars": 22,
    "install": "dsh plugin --profile web add github:Axiaohungry/dsh-llm-codebuddy",
    "added": "2026-08-14"
   },
@@ -6243,7 +6243,7 @@
     "zh": ""
    },
    "npm": null,
-   "stars": 52,
+   "stars": 53,
    "install": "dsh plugin --profile web add github:kanghelyu/dsh-deepseek-flow",
    "added": "2026-08-16"
   },
@@ -6378,7 +6378,7 @@
     "zh": ""
    },
    "npm": "dsh-chat-timeline",
-   "stars": 30,
+   "stars": 34,
    "install": "dsh plugin --profile web add dsh-chat-timeline",
    "added": "2026-08-16"
   },
@@ -6663,7 +6663,7 @@
     "zh": ""
    },
    "npm": null,
-   "stars": 31,
+   "stars": 32,
    "install": "dsh plugin --profile web add github:Gin-7/dsh-pet-remielle",
    "added": "2026-08-15"
   },
@@ -6813,7 +6813,7 @@
     "zh": ""
    },
    "npm": null,
-   "stars": 62,
+   "stars": 67,
    "install": "dsh plugin --profile web add github:skymecode/deepseek-harness-for-vscode",
    "added": "2026-08-15"
   },
@@ -6888,7 +6888,7 @@
     "zh": ""
    },
    "npm": "dsh-plugin-writing-guard",
-   "stars": 22,
+   "stars": 25,
    "install": "dsh plugin --profile web add dsh-plugin-writing-guard",
    "added": "2026-08-16"
   },
@@ -6918,7 +6918,7 @@
     "zh": ""
    },
    "npm": null,
-   "stars": 26,
+   "stars": 27,
    "install": "dsh plugin --profile web add github:xiaoshihou514/dsh-desktop-pet",
    "added": "2026-08-16"
   },
@@ -7338,7 +7338,7 @@
     "zh": ""
    },
    "npm": null,
-   "stars": 66,
+   "stars": 70,
    "install": "dsh plugin --profile web add github:dclichang2022/dsh-green-meter",
    "added": "2026-08-14"
   },
@@ -7608,7 +7608,7 @@
     "zh": ""
    },
    "npm": null,
-   "stars": 48,
+   "stars": 50,
    "install": "dsh plugin --profile web add github:a179-sanae/dsh-auto-collapse",
    "added": "2026-08-16"
   },
@@ -7758,7 +7758,7 @@
     "zh": "注入器、任务感知思维模式路由预设与模式增强插件组成的 DSH 路由套装。"
    },
    "npm": null,
-   "stars": 6768,
+   "stars": 6822,
    "install": "",
    "added": "2026-08-16",
    "installMode": "manual",
@@ -7792,7 +7792,7 @@
     "zh": ""
    },
    "npm": null,
-   "stars": 479,
+   "stars": 480,
    "install": "dsh plugin --profile web add github:xiaods/k8e",
    "added": "2026-08-16"
   },
@@ -7807,7 +7807,7 @@
     "zh": ""
    },
    "npm": null,
-   "stars": 469,
+   "stars": 479,
    "install": "dsh plugin --profile web add github:hashgraph-online/hol-guard",
    "added": "2026-08-17"
   },
@@ -7852,7 +7852,7 @@
     "zh": ""
    },
    "npm": null,
-   "stars": 206,
+   "stars": 210,
    "install": "dsh plugin --profile web add github:ZJU-REAL/Polaris",
    "added": "2026-08-17"
   },
@@ -7867,7 +7867,7 @@
     "zh": ""
    },
    "npm": "@cocofhu/anime-find",
-   "stars": 162,
+   "stars": 163,
    "install": "dsh plugin --profile web add @cocofhu/anime-find",
    "added": "2026-08-16"
   },
@@ -7897,7 +7897,7 @@
     "zh": ""
    },
    "npm": null,
-   "stars": 55,
+   "stars": 57,
    "install": "dsh plugin --profile web add github:wxkingstar/SpecFusion",
    "added": "2026-08-16"
   },
@@ -7912,7 +7912,7 @@
     "zh": ""
    },
    "npm": null,
-   "stars": 36,
+   "stars": 38,
    "install": "dsh plugin --profile web add github:AX1202/ax-feishu-bridge",
    "added": "2026-08-16"
   },
@@ -7942,7 +7942,7 @@
     "zh": ""
    },
    "npm": null,
-   "stars": 65,
+   "stars": 66,
    "install": "dsh plugin --profile web add github:feibi-mochi/deepseek-harness-control-center",
    "added": "2026-08-16"
   },
@@ -7957,7 +7957,7 @@
     "zh": ""
    },
    "npm": "dsh-pocket",
-   "stars": 602,
+   "stars": 663,
    "install": "dsh plugin --profile web add dsh-pocket",
    "added": "2026-08-16"
   },
@@ -7972,7 +7972,7 @@
     "zh": ""
    },
    "npm": "dsh-plugin-swift-cycle",
-   "stars": 15,
+   "stars": 21,
    "install": "dsh plugin --profile web add dsh-plugin-swift-cycle",
    "added": "2026-08-16"
   },
@@ -8002,7 +8002,7 @@
     "zh": ""
    },
    "npm": "dsh-full-remote",
-   "stars": 23,
+   "stars": 24,
    "install": "dsh plugin --profile web add dsh-full-remote",
    "added": "2026-08-16"
   },
@@ -8077,7 +8077,7 @@
     "zh": ""
    },
    "npm": null,
-   "stars": 32,
+   "stars": 35,
    "install": "dsh plugin --profile web add github:beiyege-01/dsh-voice-ai-girlfriend",
    "added": "2026-08-16"
   },
@@ -8092,7 +8092,7 @@
     "zh": ""
    },
    "npm": null,
-   "stars": 26,
+   "stars": 35,
    "install": "dsh plugin --profile web add github:Aisland-SJL/dsh-usage",
    "added": "2026-08-16"
   },
@@ -8182,7 +8182,7 @@
     "zh": ""
    },
    "npm": null,
-   "stars": 490,
+   "stars": 534,
    "install": "dsh plugin --profile web add github:lencx/Minke",
    "added": "2026-08-15"
   },
@@ -8257,7 +8257,7 @@
     "zh": ""
    },
    "npm": null,
-   "stars": 41,
+   "stars": 45,
    "install": "dsh plugin --profile web add github:sorsama/deepseek-harness-mobile",
    "added": "2026-08-15"
   },
@@ -8377,7 +8377,7 @@
     "zh": ""
    },
    "npm": null,
-   "stars": 129,
+   "stars": 131,
    "install": "dsh plugin --profile web add github:toolclub/dsh-agent-team-gui",
    "added": "2026-08-15"
   },
@@ -8437,7 +8437,7 @@
     "zh": ""
    },
    "npm": null,
-   "stars": 14055,
+   "stars": 14162,
    "install": "dsh plugin --profile web add github:walkinglabs/learn-harness-engineering",
    "added": "2026-08-06"
   },
@@ -8452,7 +8452,7 @@
     "zh": ""
    },
    "npm": null,
-   "stars": 1540,
+   "stars": 1566,
    "install": "dsh plugin --profile web add github:Alisa0808/vox-director",
    "added": "2026-08-11"
   },
@@ -8467,7 +8467,7 @@
     "zh": ""
    },
    "npm": null,
-   "stars": 254,
+   "stars": 262,
    "install": "dsh plugin --profile web add github:Awesome-AI-Pedia/Awesome-AI-Pedia",
    "added": "2026-08-17"
   },
@@ -8482,7 +8482,7 @@
     "zh": ""
    },
    "npm": null,
-   "stars": 145,
+   "stars": 146,
    "install": "dsh plugin --profile web add github:liebaojun/MakoCode",
    "added": "2026-08-14"
   },
@@ -8497,7 +8497,7 @@
     "zh": ""
    },
    "npm": null,
-   "stars": 122,
+   "stars": 136,
    "install": "dsh plugin --profile web add github:shengsheng90/DSH-taskboard",
    "added": "2026-08-16"
   },
@@ -8512,7 +8512,7 @@
     "zh": ""
    },
    "npm": "deepseek-harness-auth",
-   "stars": 21,
+   "stars": 22,
    "install": "dsh plugin --profile web add deepseek-harness-auth",
    "added": "2026-08-16"
   },
@@ -8572,7 +8572,7 @@
     "zh": ""
    },
    "npm": null,
-   "stars": 22,
+   "stars": 26,
    "install": "dsh plugin --profile web add github:taxueseek/dsh-files",
    "added": "2026-08-16"
   },
@@ -8587,7 +8587,7 @@
     "zh": ""
    },
    "npm": null,
-   "stars": 77,
+   "stars": 87,
    "install": "dsh plugin --profile web add github:liguobao/deepseek-harness-remote",
    "added": "2026-08-16"
   },
@@ -8662,7 +8662,7 @@
     "zh": ""
    },
    "npm": null,
-   "stars": 35127,
+   "stars": 35166,
    "install": "dsh plugin --profile web add github:esengine/DeepSeek-Reasonix",
    "added": "2026-08-18"
   },
@@ -8677,7 +8677,7 @@
     "zh": ""
    },
    "npm": null,
-   "stars": 12404,
+   "stars": 12425,
    "install": "dsh plugin --profile web add github:EverMind-AI/EverOS",
    "added": "2026-08-17"
   },
@@ -8692,7 +8692,7 @@
     "zh": ""
    },
    "npm": null,
-   "stars": 2523,
+   "stars": 2594,
    "install": "dsh plugin --profile web add github:chuspeeism/dashi-taskboard",
    "added": "2026-08-18"
   },
@@ -8707,7 +8707,7 @@
     "zh": ""
    },
    "npm": null,
-   "stars": 1625,
+   "stars": 1632,
    "install": "dsh plugin --profile web add github:Jesseovo/last30days-skill-cn",
    "added": "2026-07-20"
   },
@@ -8722,7 +8722,7 @@
     "zh": ""
    },
    "npm": null,
-   "stars": 1306,
+   "stars": 1344,
    "install": "dsh plugin --profile web add github:Tencent/BrowserSkill",
    "added": "2026-08-18"
   },
@@ -8737,7 +8737,7 @@
     "zh": ""
    },
    "npm": null,
-   "stars": 1111,
+   "stars": 1121,
    "install": "dsh plugin --profile web add github:alvinunreal/openpets",
    "added": "2026-08-17"
   },
@@ -8752,7 +8752,7 @@
     "zh": ""
    },
    "npm": null,
-   "stars": 985,
+   "stars": 988,
    "install": "dsh plugin --profile web add github:Anil-matcha/awesome-dsh-plugin",
    "added": "2026-08-17"
   },
@@ -8767,7 +8767,7 @@
     "zh": ""
    },
    "npm": null,
-   "stars": 943,
+   "stars": 991,
    "install": "dsh plugin --profile web add github:MemTensor/memmy-agent",
    "added": "2026-08-18"
   },
@@ -8782,7 +8782,7 @@
     "zh": ""
    },
    "npm": null,
-   "stars": 463,
+   "stars": 464,
    "install": "dsh plugin --profile web add github:syncable-dev/memtrace-public",
    "added": "2026-08-17"
   },
@@ -8797,7 +8797,7 @@
     "zh": ""
    },
    "npm": null,
-   "stars": 386,
+   "stars": 391,
    "install": "dsh plugin --profile web add github:ZJU-LLMs/OpenStory",
    "added": "2026-08-17"
   },
@@ -8812,7 +8812,7 @@
     "zh": ""
    },
    "npm": null,
-   "stars": 391,
+   "stars": 401,
    "install": "dsh plugin --profile web add github:alibaba/anolisa",
    "added": "2026-08-18"
   },
@@ -8842,7 +8842,7 @@
     "zh": ""
    },
    "npm": null,
-   "stars": 102,
+   "stars": 104,
    "install": "dsh plugin --profile web add github:Fishquito7/dsh-skill-mcp-panel",
    "added": "2026-08-18"
   },
@@ -8857,7 +8857,7 @@
     "zh": ""
    },
    "npm": "dsh-memento",
-   "stars": 61,
+   "stars": 62,
    "install": "dsh plugin --profile web add dsh-memento",
    "added": "2026-08-18"
   },
@@ -8872,7 +8872,7 @@
     "zh": ""
    },
    "npm": null,
-   "stars": 110,
+   "stars": 113,
    "install": "dsh plugin --profile web add github:ZSeven-W/dsh-crew",
    "added": "2026-08-17"
   },
@@ -8902,7 +8902,7 @@
     "zh": ""
    },
    "npm": "dsh-plugin-wallpaper-engine",
-   "stars": 183,
+   "stars": 191,
    "install": "dsh plugin --profile web add dsh-plugin-wallpaper-engine",
    "added": "2026-08-17"
   },
@@ -8917,7 +8917,7 @@
     "zh": ""
    },
    "npm": null,
-   "stars": 43,
+   "stars": 44,
    "install": "dsh plugin --profile web add github:Viy1204/recruiting-copilot",
    "added": "2026-08-18"
   },
@@ -8947,7 +8947,7 @@
     "zh": ""
    },
    "npm": null,
-   "stars": 245,
+   "stars": 260,
    "install": "dsh plugin --profile web add github:howmp/dsh-pentest",
    "added": "2026-08-16"
   },
@@ -8962,7 +8962,7 @@
     "zh": ""
    },
    "npm": "dsh-auto-review",
-   "stars": 98,
+   "stars": 110,
    "install": "dsh plugin --profile web add dsh-auto-review",
    "added": "2026-08-18"
   },
@@ -8977,7 +8977,7 @@
     "zh": ""
    },
    "npm": null,
-   "stars": 254,
+   "stars": 258,
    "install": "dsh plugin --profile web add github:op7418/pilot-harness",
    "added": "2026-08-18"
   },
@@ -8992,7 +8992,7 @@
     "zh": ""
    },
    "npm": null,
-   "stars": 119,
+   "stars": 122,
    "install": "dsh plugin --profile web add github:wssfk12138/dsh-damage-pulse",
    "added": "2026-08-18"
   },
@@ -9067,7 +9067,7 @@
     "zh": ""
    },
    "npm": null,
-   "stars": 54,
+   "stars": 59,
    "install": "dsh plugin --profile web add github:sandbaseai/sandbase-skills",
    "added": "2026-08-15"
   },
@@ -9082,7 +9082,7 @@
     "zh": ""
    },
    "npm": null,
-   "stars": 87,
+   "stars": 92,
    "install": "dsh plugin --profile web add github:kingOfSoySauce/dsh-skin-market",
    "added": "2026-08-18"
   },
@@ -9097,7 +9097,7 @@
     "zh": ""
    },
    "npm": "dsh-free-search",
-   "stars": 56,
+   "stars": 63,
    "install": "dsh plugin --profile web add dsh-free-search",
    "added": "2026-08-17"
   },
@@ -9127,7 +9127,7 @@
     "zh": ""
    },
    "npm": null,
-   "stars": 24,
+   "stars": 25,
    "install": "dsh plugin --profile web add github:a735624258/dsh-skill-picker",
    "added": "2026-08-16"
   },
@@ -9142,7 +9142,7 @@
     "zh": ""
    },
    "npm": null,
-   "stars": 21,
+   "stars": 23,
    "install": "dsh plugin --profile web add github:Jungod1121/dsh-anchored-standard",
    "added": "2026-08-16"
   },
@@ -9157,7 +9157,7 @@
     "zh": ""
    },
    "npm": "dsh-mobile",
-   "stars": 138,
+   "stars": 145,
    "install": "dsh plugin --profile web add dsh-mobile",
    "added": "2026-08-18"
   },
@@ -9217,7 +9217,7 @@
     "zh": ""
    },
    "npm": "dsh-plugin-subscriptions",
-   "stars": 266,
+   "stars": 274,
    "install": "dsh plugin --profile web add dsh-plugin-subscriptions",
    "added": "2026-08-17"
   },
@@ -9262,7 +9262,7 @@
     "zh": ""
    },
    "npm": null,
-   "stars": 36,
+   "stars": 38,
    "install": "dsh plugin --profile web add github:Sutera-Diffusus/dsh-whale-musume",
    "added": "2026-08-17"
   },
@@ -9307,7 +9307,7 @@
     "zh": ""
    },
    "npm": "dsh-codex-subscription",
-   "stars": 21,
+   "stars": 23,
    "install": "dsh plugin --profile web add dsh-codex-subscription",
    "added": "2026-08-18"
   },
@@ -9352,7 +9352,7 @@
     "zh": ""
    },
    "npm": null,
-   "stars": 22,
+   "stars": 25,
    "install": "dsh plugin --profile web add github:slywalker2006/dsh-passwords",
    "added": "2026-08-17"
   },
@@ -9367,7 +9367,7 @@
     "zh": ""
    },
    "npm": "dsh-image-gen",
-   "stars": 183,
+   "stars": 200,
    "install": "dsh plugin --profile web add dsh-image-gen",
    "added": "2026-08-18"
   },
@@ -9397,7 +9397,7 @@
     "zh": ""
    },
    "npm": "deepseek-harness-zh_pro",
-   "stars": 20,
+   "stars": 22,
    "install": "dsh plugin --profile web add deepseek-harness-zh_pro",
    "added": "2026-08-17"
   },
@@ -9412,7 +9412,7 @@
     "zh": ""
    },
    "npm": null,
-   "stars": 25,
+   "stars": 27,
    "install": "dsh plugin --profile web add github:dhicoc/dsh-chinese-traditional-wisdom-skill",
    "added": "2026-08-16"
   },
@@ -9427,7 +9427,7 @@
     "zh": ""
    },
    "npm": null,
-   "stars": 49,
+   "stars": 50,
    "install": "dsh plugin --profile web add github:dream12347/dsh-session-manager",
    "added": "2026-08-18"
   },
@@ -9472,7 +9472,7 @@
     "zh": ""
    },
    "npm": null,
-   "stars": 10957,
+   "stars": 10987,
    "install": "dsh plugin --profile web add github:MemTensor/MemOS",
    "added": "2026-08-18"
   },
@@ -9487,7 +9487,7 @@
     "zh": ""
    },
    "npm": null,
-   "stars": 1074,
+   "stars": 1078,
    "install": "dsh plugin --profile web add github:TencentCloudBase/CloudBase-AI-Toolkit",
    "added": "2026-08-19"
   },
@@ -9517,7 +9517,7 @@
     "zh": ""
    },
    "npm": "dsh-tongflow",
-   "stars": 929,
+   "stars": 936,
    "install": "dsh plugin --profile web add dsh-tongflow",
    "added": "2026-08-19"
   },
@@ -9532,7 +9532,7 @@
     "zh": ""
    },
    "npm": null,
-   "stars": 805,
+   "stars": 809,
    "install": "dsh plugin --profile web add github:toby-bridges/api-relay-audit",
    "added": "2026-08-15"
   },
@@ -9547,7 +9547,7 @@
     "zh": ""
    },
    "npm": null,
-   "stars": 343,
+   "stars": 344,
    "install": "dsh plugin --profile web add github:tingly-dev/tingly-box",
    "added": "2026-08-19"
   },
@@ -9562,7 +9562,7 @@
     "zh": ""
    },
    "npm": null,
-   "stars": 252,
+   "stars": 256,
    "install": "dsh plugin --profile web add github:mrpulor-gh/nuphus-mcp",
    "added": "2026-08-18"
   },
@@ -9577,7 +9577,7 @@
     "zh": ""
    },
    "npm": null,
-   "stars": 188,
+   "stars": 192,
    "install": "dsh plugin --profile web add github:d-dev0101/open-sea-skin",
    "added": "2026-08-19"
   },
@@ -9607,7 +9607,7 @@
     "zh": ""
    },
    "npm": null,
-   "stars": 100,
+   "stars": 154,
    "install": "dsh plugin --profile web add github:cocode-agency/cocode",
    "added": "2026-08-19"
   },
@@ -9622,7 +9622,7 @@
     "zh": ""
    },
    "npm": "dsh-whale-widget",
-   "stars": 895,
+   "stars": 1009,
    "install": "dsh plugin --profile web add dsh-whale-widget",
    "added": "2026-08-18"
   },
@@ -9667,7 +9667,7 @@
     "zh": ""
    },
    "npm": "beauticode-dsh",
-   "stars": 62,
+   "stars": 67,
    "install": "dsh plugin --profile web add beauticode-dsh",
    "added": "2026-08-18"
   },
@@ -9727,7 +9727,7 @@
     "zh": ""
    },
    "npm": null,
-   "stars": 88,
+   "stars": 100,
    "install": "dsh plugin --profile web add github:e2mcc/dsh-popout-sidebar",
    "added": "2026-08-18"
   },
@@ -9742,7 +9742,7 @@
     "zh": ""
    },
    "npm": null,
-   "stars": 85,
+   "stars": 101,
    "install": "dsh plugin --profile web add github:XieRW/dsh-beauty-skins",
    "added": "2026-08-18"
   },
@@ -9817,7 +9817,7 @@
     "zh": ""
    },
    "npm": null,
-   "stars": 22,
+   "stars": 23,
    "install": "dsh plugin --profile web add github:pengpengyi92/dsh-quant",
    "added": "2026-08-19"
   },
@@ -9847,7 +9847,7 @@
     "zh": ""
    },
    "npm": "meow-memory",
-   "stars": 42,
+   "stars": 44,
    "install": "dsh plugin --profile web add meow-memory",
    "added": "2026-08-18"
   },
@@ -9862,7 +9862,7 @@
     "zh": ""
    },
    "npm": null,
-   "stars": 1198,
+   "stars": 1200,
    "install": "dsh plugin --profile web add github:mem9-ai/mem9",
    "added": "2026-08-19"
   },
@@ -9877,7 +9877,7 @@
     "zh": ""
    },
    "npm": null,
-   "stars": 125,
+   "stars": 127,
    "install": "dsh plugin --profile web add github:lire1131/dsh-undo-savepoint",
    "added": "2026-08-19"
   },
@@ -9907,7 +9907,7 @@
     "zh": ""
    },
    "npm": null,
-   "stars": 904,
+   "stars": 969,
    "install": "dsh plugin --profile web add github:sunchaokun/PPT-Design-Skill",
    "added": "2026-08-19"
   },
@@ -9922,7 +9922,7 @@
     "zh": ""
    },
    "npm": null,
-   "stars": 58,
+   "stars": 60,
    "install": "dsh plugin --profile web add github:openma-ai/Martty",
    "added": "2026-08-19"
   },
@@ -9937,7 +9937,7 @@
     "zh": ""
    },
    "npm": null,
-   "stars": 143,
+   "stars": 146,
    "install": "dsh plugin --profile web add github:oil-oil/dsh-oil-creator",
    "added": "2026-08-20"
   },
@@ -9952,7 +9952,7 @@
     "zh": ""
    },
    "npm": "dsh-univer-office",
-   "stars": 109,
+   "stars": 134,
    "install": "dsh plugin --profile web add dsh-univer-office",
    "added": "2026-08-19"
   },
@@ -9967,7 +9967,7 @@
     "zh": ""
    },
    "npm": "dsh-trace-compare",
-   "stars": 44,
+   "stars": 47,
    "install": "dsh plugin --profile web add dsh-trace-compare",
    "added": "2026-08-19"
   },
@@ -9982,7 +9982,7 @@
     "zh": ""
    },
    "npm": null,
-   "stars": 40,
+   "stars": 46,
    "install": "dsh plugin --profile web add github:Fisfzy/dsh-ego-browser",
    "added": "2026-08-19"
   },
@@ -9997,7 +9997,7 @@
     "zh": ""
    },
    "npm": null,
-   "stars": 127,
+   "stars": 135,
    "install": "dsh plugin --profile web add github:Totoro-qaq/dsh-plugin-bridge",
    "added": "2026-08-19"
   },
@@ -10012,7 +10012,7 @@
     "zh": ""
    },
    "npm": "@graysilver/dsh-evolve-modes",
-   "stars": 97,
+   "stars": 111,
    "install": "dsh plugin --profile web add @graysilver/dsh-evolve-modes",
    "added": "2026-08-18"
   },
@@ -10027,7 +10027,7 @@
     "zh": ""
    },
    "npm": "dsh-permission-rules",
-   "stars": 36,
+   "stars": 45,
    "install": "dsh plugin --profile web add dsh-permission-rules",
    "added": "2026-08-19"
   },
@@ -10042,7 +10042,7 @@
     "zh": ""
    },
    "npm": null,
-   "stars": 36,
+   "stars": 41,
    "install": "dsh plugin --profile web add github:rison114514/dsh-endfield-ui",
    "added": "2026-08-19"
   },
@@ -10057,7 +10057,7 @@
     "zh": ""
    },
    "npm": null,
-   "stars": 46,
+   "stars": 54,
    "install": "dsh plugin --profile web add github:PolinniZhong/dsh-omi-voice",
    "added": "2026-08-19"
   },
@@ -10087,7 +10087,7 @@
     "zh": ""
    },
    "npm": null,
-   "stars": 22,
+   "stars": 24,
    "install": "dsh plugin --profile web add github:niiang/dsh-kimino-theme",
    "added": "2026-08-19"
   },
@@ -10102,7 +10102,7 @@
     "zh": ""
    },
    "npm": "dsh-mcp-panel",
-   "stars": 43,
+   "stars": 45,
    "install": "dsh plugin --profile web add dsh-mcp-panel",
    "added": "2026-08-19"
   },
@@ -10162,7 +10162,7 @@
     "zh": ""
    },
    "npm": null,
-   "stars": 21,
+   "stars": 24,
    "install": "dsh plugin --profile web add github:limuyang2/agent-team",
    "added": "2026-08-20"
   },
@@ -10237,7 +10237,7 @@
     "zh": ""
    },
    "npm": null,
-   "stars": 36,
+   "stars": 41,
    "install": "dsh plugin --profile web add github:dundunhan/dsh-video-lens",
    "added": "2026-08-18"
   },
@@ -10267,7 +10267,7 @@
     "zh": ""
    },
    "npm": null,
-   "stars": 85,
+   "stars": 98,
    "install": "dsh plugin --profile web add github:hanshenmesen/dsh-turn-delete",
    "added": "2026-08-18"
   },
@@ -10327,7 +10327,7 @@
     "zh": ""
    },
    "npm": null,
-   "stars": 209,
+   "stars": 231,
    "install": "dsh plugin --profile web add github:liangmianya/dsh-synapse",
    "added": "2026-08-20"
   },
@@ -10342,7 +10342,7 @@
     "zh": ""
    },
    "npm": null,
-   "stars": 245,
+   "stars": 254,
    "install": "dsh plugin --profile web add github:ZSeven-W/dsh-ios",
    "added": "2026-08-20"
   },
@@ -10372,7 +10372,7 @@
     "zh": ""
    },
    "npm": null,
-   "stars": 40,
+   "stars": 44,
    "install": "dsh plugin --profile web add github:MiaoQichuan/new-litigation-visualization",
    "added": "2026-08-20"
   },
@@ -10432,7 +10432,7 @@
     "zh": ""
    },
    "npm": null,
-   "stars": 162,
+   "stars": 196,
    "install": "dsh plugin --profile web add github:EverMind-AI/SkillCorpus",
    "added": "2026-08-21"
   },
@@ -10462,7 +10462,7 @@
     "zh": ""
    },
    "npm": "dsh-plugin-guide",
-   "stars": 30,
+   "stars": 31,
    "install": "dsh plugin --profile web add dsh-plugin-guide",
    "added": "2026-08-18"
   },
@@ -10477,7 +10477,7 @@
     "zh": ""
    },
    "npm": null,
-   "stars": 67,
+   "stars": 78,
    "install": "dsh plugin --profile web add github:Renzic-Stone/DSH-EasyRewrite",
    "added": "2026-08-20"
   },
@@ -10492,7 +10492,7 @@
     "zh": ""
    },
    "npm": null,
-   "stars": 32,
+   "stars": 35,
    "install": "dsh plugin --profile web add github:MichengAI/dsh-codex-ui",
    "added": "2026-08-20"
   },
@@ -10507,7 +10507,7 @@
     "zh": ""
    },
    "npm": null,
-   "stars": 50,
+   "stars": 60,
    "install": "dsh plugin --profile web add github:hg1048596-pixel/dsh-recall-unread",
    "added": "2026-08-19"
   },
@@ -10522,7 +10522,7 @@
     "zh": ""
    },
    "npm": "dsh-remote-plugin",
-   "stars": 23,
+   "stars": 27,
    "install": "dsh plugin --profile web add dsh-remote-plugin",
    "added": "2026-08-19"
   },
@@ -10552,7 +10552,7 @@
     "zh": ""
    },
    "npm": null,
-   "stars": 36,
+   "stars": 40,
    "install": "dsh plugin --profile web add github:flizzywine/dsh-tavern",
    "added": "2026-08-21"
   },
@@ -10582,7 +10582,7 @@
     "zh": ""
    },
    "npm": null,
-   "stars": 28,
+   "stars": 29,
    "install": "dsh plugin --profile web add github:ExElectron/dsh-gov-portal",
    "added": "2026-08-20"
   },
@@ -10597,7 +10597,7 @@
     "zh": ""
    },
    "npm": "dsh-plugin",
-   "stars": 43,
+   "stars": 49,
    "install": "dsh plugin --profile web add dsh-plugin",
    "added": "2026-08-20"
   },
@@ -10612,7 +10612,7 @@
     "zh": ""
    },
    "npm": "@michengai/dsh-skills-manager",
-   "stars": 20,
+   "stars": 21,
    "install": "dsh plugin --profile web add @michengai/dsh-skills-manager",
    "added": "2026-08-20"
   },
@@ -10627,7 +10627,7 @@
     "zh": ""
    },
    "npm": null,
-   "stars": 69309,
+   "stars": 69416,
    "install": "dsh plugin --profile web add github:ruvnet/ruflo",
    "added": "2026-08-21"
   },
@@ -10642,7 +10642,7 @@
     "zh": ""
    },
    "npm": null,
-   "stars": 27038,
+   "stars": 27045,
    "install": "dsh plugin --profile web add github:Molunerfinn/PicGo",
    "added": "2026-08-17"
   },
@@ -10657,7 +10657,7 @@
     "zh": ""
    },
    "npm": null,
-   "stars": 23826,
+   "stars": 23849,
    "install": "dsh plugin --profile web add github:nocobase/nocobase",
    "added": "2026-08-22"
   },
@@ -10672,7 +10672,7 @@
     "zh": ""
    },
    "npm": null,
-   "stars": 20557,
+   "stars": 20635,
    "install": "dsh plugin --profile web add github:Tencent/WeKnora",
    "added": "2026-08-21"
   },
@@ -10687,7 +10687,7 @@
     "zh": ""
    },
    "npm": null,
-   "stars": 467,
+   "stars": 475,
    "install": "dsh plugin --profile web add github:FSMargoo/dsh-at-file",
    "added": "2026-08-20"
   },
@@ -10732,7 +10732,7 @@
     "zh": ""
    },
    "npm": null,
-   "stars": 80,
+   "stars": 94,
    "install": "dsh plugin --profile web add github:seriousz158/dsh-memory",
    "added": "2026-08-21"
   },
@@ -10747,7 +10747,7 @@
     "zh": ""
    },
    "npm": null,
-   "stars": 109,
+   "stars": 118,
    "install": "dsh plugin --profile web add github:ZSeven-W/dsh-android",
    "added": "2026-08-21"
   },
@@ -10762,7 +10762,7 @@
     "zh": ""
    },
    "npm": null,
-   "stars": 31,
+   "stars": 32,
    "install": "dsh plugin --profile web add github:skyf0xx/hedgehog",
    "added": "2026-08-22"
   },
@@ -10777,7 +10777,7 @@
     "zh": ""
    },
    "npm": null,
-   "stars": 138,
+   "stars": 143,
    "install": "dsh plugin --profile web add github:summer1238/dsh-remote-web-gateway",
    "added": "2026-08-21"
   },
@@ -10822,7 +10822,7 @@
     "zh": ""
    },
    "npm": null,
-   "stars": 25,
+   "stars": 26,
    "install": "dsh plugin --profile web add github:dshbox/cordis-rs",
    "added": "2026-08-19"
   },
@@ -10852,7 +10852,7 @@
     "zh": ""
    },
    "npm": "@wenbin_wb/dsh-bridge",
-   "stars": 33,
+   "stars": 45,
    "install": "dsh plugin --profile web add @wenbin_wb/dsh-bridge",
    "added": "2026-08-21"
   },
@@ -10867,7 +10867,7 @@
     "zh": ""
    },
    "npm": null,
-   "stars": 15,
+   "stars": 22,
    "install": "dsh plugin --profile web add github:FTShare-Lab/dsh_kline",
    "added": "2026-08-21"
   },
@@ -10897,7 +10897,7 @@
     "zh": ""
    },
    "npm": null,
-   "stars": 1120,
+   "stars": 1191,
    "install": "dsh plugin --profile web add github:dsh-tauri-desk/deepseek-harness-desktop",
    "added": "2026-08-23"
   },
@@ -10912,7 +10912,7 @@
     "zh": ""
    },
    "npm": "dsh-deja",
-   "stars": 711,
+   "stars": 724,
    "install": "dsh plugin --profile web add dsh-deja",
    "added": "2026-08-23"
   },
@@ -10927,7 +10927,7 @@
     "zh": ""
    },
    "npm": null,
-   "stars": 631,
+   "stars": 632,
    "install": "dsh plugin --profile web add github:vibeinging/dsh-desktop",
    "added": "2026-08-15"
   },
@@ -10957,7 +10957,7 @@
     "zh": ""
    },
    "npm": null,
-   "stars": 257,
+   "stars": 258,
    "install": "dsh plugin --profile web add github:ericshang98/Perfect-Web-Clone",
    "added": "2026-08-22"
   },
@@ -10972,7 +10972,7 @@
     "zh": ""
    },
    "npm": null,
-   "stars": 135,
+   "stars": 136,
    "install": "dsh plugin --profile web add github:EthanYoQ/Invoice-Downloader",
    "added": "2026-08-22"
   },
@@ -10987,7 +10987,7 @@
     "zh": ""
    },
    "npm": null,
-   "stars": 105,
+   "stars": 108,
    "install": "dsh plugin --profile web add github:volcengine/ark-cli",
    "added": "2026-08-21"
   },
@@ -11017,7 +11017,7 @@
     "zh": ""
    },
    "npm": null,
-   "stars": 55,
+   "stars": 56,
    "install": "dsh plugin --profile web add github:yxxbc/dsh-balance-plugin",
    "added": "2026-08-22"
   },
@@ -11032,7 +11032,7 @@
     "zh": ""
    },
    "npm": null,
-   "stars": 54,
+   "stars": 56,
    "install": "dsh plugin --profile web add github:yuc16/PatentRadar",
    "added": "2026-08-09"
   },
@@ -11047,7 +11047,7 @@
     "zh": ""
    },
    "npm": null,
-   "stars": 56,
+   "stars": 63,
    "install": "dsh plugin --profile web add github:Akimiya-z/codex-guard",
    "added": "2026-08-23"
   },
@@ -11077,7 +11077,7 @@
     "zh": ""
    },
    "npm": null,
-   "stars": 33,
+   "stars": 40,
    "install": "dsh plugin --profile web add github:ymh0000123/dsh-theme-endfield",
    "added": "2026-08-22"
   },
@@ -11092,7 +11092,7 @@
     "zh": ""
    },
    "npm": null,
-   "stars": 26,
+   "stars": 35,
    "install": "dsh plugin --profile web add github:PensiveFei/dsh-secure-audit",
    "added": "2026-08-23"
   },
@@ -11107,7 +11107,7 @@
     "zh": ""
    },
    "npm": "dsh-builtin-browser",
-   "stars": 22,
+   "stars": 24,
    "install": "dsh plugin --profile web add dsh-builtin-browser",
    "added": "2026-08-16"
   },
@@ -11121,9 +11121,9 @@
     "en": "Reach the DeepSeek Harness on your dev machine from your phone — across networks, through no server at all (iroh P2P)",
     "zh": ""
    },
-   "npm": null,
-   "stars": 23,
-   "install": "dsh plugin --profile web add github:zexadev/dsh-tether",
+   "npm": "dsh-plugin-tether",
+   "stars": 26,
+   "install": "dsh plugin --profile web add dsh-plugin-tether",
    "added": "2026-08-22"
   },
   {
@@ -11152,7 +11152,7 @@
     "zh": ""
    },
    "npm": null,
-   "stars": 31,
+   "stars": 41,
    "install": "dsh plugin --profile web add github:T-Auto/dsh-ecosystem-spec",
    "added": "2026-08-22"
   },
@@ -11167,7 +11167,7 @@
     "zh": ""
    },
    "npm": null,
-   "stars": 23,
+   "stars": 29,
    "install": "dsh plugin --profile web add github:kanneiren/dsh-network-settings",
    "added": "2026-08-22"
   },
@@ -11182,7 +11182,7 @@
     "zh": ""
    },
    "npm": "dsh-codex-sync",
-   "stars": 23,
+   "stars": 24,
    "install": "dsh plugin --profile web add dsh-codex-sync",
    "added": "2026-08-21"
   },
@@ -11197,7 +11197,7 @@
     "zh": ""
    },
    "npm": null,
-   "stars": 46,
+   "stars": 47,
    "install": "dsh plugin --profile web add github:xi-zhao/OpenQuantum",
    "added": "2026-08-23"
   },
@@ -11212,7 +11212,7 @@
     "zh": ""
    },
    "npm": null,
-   "stars": 31,
+   "stars": 36,
    "install": "dsh plugin --profile web add github:WM-CODER/custom-first-control-prompt",
    "added": "2026-08-21"
   },
@@ -11227,7 +11227,7 @@
     "zh": ""
    },
    "npm": null,
-   "stars": 100,
+   "stars": 167,
    "install": "dsh plugin --profile web add github:Aisland-SJL/dsh-worktable",
    "added": "2026-08-24"
   },
@@ -11242,7 +11242,7 @@
     "zh": ""
    },
    "npm": null,
-   "stars": 23,
+   "stars": 24,
    "install": "dsh plugin --profile web add github:JUSTMONIKA2022/dsh-sandbox-escalation-fix",
    "added": "2026-08-23"
   },
@@ -11257,7 +11257,7 @@
     "zh": ""
    },
    "npm": null,
-   "stars": 21,
+   "stars": 29,
    "install": "dsh plugin --profile web add github:xuedai-mayi/dsh-wenshan",
    "added": "2026-08-19"
   },
@@ -11287,7 +11287,7 @@
     "zh": ""
    },
    "npm": null,
-   "stars": 20,
+   "stars": 21,
    "install": "dsh plugin --profile web add github:MichengAI/dsh-agency-agents",
    "added": "2026-08-23"
   },
@@ -11301,9 +11301,9 @@
     "en": "Trading research workbench for DeepSeek Harness (dsh): typed market-data seam, deterministic indicators, interactive chart cards ｜ 交易研究工作台插件：数据接缝 · 确定性指标 · 交互式K线卡",
     "zh": ""
    },
-   "npm": "@dsh-trading/tool-market",
+   "npm": "@dsh-trading/market-data",
    "stars": 17,
-   "install": "dsh plugin --profile web add @dsh-trading/tool-market",
+   "install": "dsh plugin --profile web add @dsh-trading/market-data",
    "added": "2026-08-23"
   },
   {
@@ -11317,7 +11317,7 @@
     "zh": ""
    },
    "npm": null,
-   "stars": 23935,
+   "stars": 23986,
    "install": "dsh plugin --profile web add github:titanwings/distilly",
    "added": "2026-08-24"
   },
@@ -11332,7 +11332,7 @@
     "zh": ""
    },
    "npm": null,
-   "stars": 19820,
+   "stars": 20307,
    "install": "dsh plugin --profile web add github:anywhere-labs/dsh-desktop",
    "added": "2026-08-25"
   },
@@ -11347,7 +11347,7 @@
     "zh": ""
    },
    "npm": null,
-   "stars": 5958,
+   "stars": 6082,
    "install": "dsh plugin --profile web add github:zhu1090093659/dsh-web",
    "added": "2026-08-25"
   },
@@ -11362,7 +11362,7 @@
     "zh": ""
    },
    "npm": null,
-   "stars": 3342,
+   "stars": 3350,
    "install": "dsh plugin --profile web add github:agentscope-ai/ReMe",
    "added": "2026-08-24"
   },
@@ -11377,7 +11377,7 @@
     "zh": ""
    },
    "npm": null,
-   "stars": 2501,
+   "stars": 2512,
    "install": "dsh plugin --profile web add github:zilliztech/memsearch",
    "added": "2026-08-23"
   },
@@ -11392,7 +11392,7 @@
     "zh": ""
    },
    "npm": null,
-   "stars": 326,
+   "stars": 338,
    "install": "dsh plugin --profile web add github:Unclecheng-li/DeepSec",
    "added": "2026-08-24"
   },
@@ -11407,7 +11407,7 @@
     "zh": ""
    },
    "npm": null,
-   "stars": 171,
+   "stars": 181,
    "install": "dsh plugin --profile web add github:zenstory-ai/oh-story-dsh",
    "added": "2026-08-24"
   },
@@ -11422,7 +11422,7 @@
     "zh": ""
    },
    "npm": null,
-   "stars": 76,
+   "stars": 96,
    "install": "dsh plugin --profile web add github:hancao97/hanai-investment-dsh",
    "added": "2026-08-24"
   },
@@ -11437,7 +11437,7 @@
     "zh": ""
    },
    "npm": null,
-   "stars": 71,
+   "stars": 90,
    "install": "dsh plugin --profile web add github:Yan-Zero/dsh-std",
    "added": "2026-08-23"
   },
@@ -11451,9 +11451,9 @@
     "en": "Mimir — 一站式科研工作台插件：LaTeX 论文边写边编译、arXiv 文献管理、实验追踪、指标图表、GPU 服务器 SSH 任务编排，管理科研全周期。An open-source research workbench plugin for the whole research cycle.",
     "zh": ""
    },
-   "npm": null,
-   "stars": 62,
-   "install": "dsh plugin --profile web add github:1692775560/dsh-Mimir-Academic-research",
+   "npm": "dsh-mimir",
+   "stars": 78,
+   "install": "dsh plugin --profile web add dsh-mimir",
    "added": "2026-08-24"
   },
   {
@@ -11467,7 +11467,7 @@
     "zh": ""
    },
    "npm": null,
-   "stars": 48,
+   "stars": 49,
    "install": "dsh plugin --profile web add github:JingxuanC/causal-memory",
    "added": "2026-08-24"
   },
@@ -11482,7 +11482,7 @@
     "zh": ""
    },
    "npm": null,
-   "stars": 37,
+   "stars": 58,
    "install": "dsh plugin --profile web add github:SeaOf0/dsh-redteam-model",
    "added": "2026-08-25"
   },
@@ -11497,7 +11497,7 @@
     "zh": ""
    },
    "npm": null,
-   "stars": 36,
+   "stars": 44,
    "install": "dsh plugin --profile web add github:Tasihi89/dsh-talk-map",
    "added": "2026-08-23"
   },
@@ -11512,7 +11512,7 @@
     "zh": ""
    },
    "npm": null,
-   "stars": 29,
+   "stars": 36,
    "install": "dsh plugin --profile web add github:MichengAI/dsh-codex-desktop",
    "added": "2026-08-24"
   },
@@ -11542,7 +11542,7 @@
     "zh": ""
    },
    "npm": null,
-   "stars": 27,
+   "stars": 29,
    "install": "dsh plugin --profile web add github:BeforeWave/dsh-with-chatgpt",
    "added": "2026-08-24"
   },
@@ -11557,7 +11557,7 @@
     "zh": ""
    },
    "npm": null,
-   "stars": 26,
+   "stars": 40,
    "install": "dsh plugin --profile web add github:gityuanbao/DSH-Plugins",
    "added": "2026-08-16"
   },
@@ -11572,7 +11572,7 @@
     "zh": ""
    },
    "npm": null,
-   "stars": 26,
+   "stars": 27,
    "install": "dsh plugin --profile web add github:dickpy/dsh-imagegen",
    "added": "2026-08-24"
   },
@@ -11587,7 +11587,7 @@
     "zh": ""
    },
    "npm": "dsh-config-manager",
-   "stars": 24,
+   "stars": 27,
    "install": "dsh plugin --profile web add dsh-config-manager",
    "added": "2026-08-24"
   },
@@ -11602,7 +11602,7 @@
     "zh": ""
    },
    "npm": null,
-   "stars": 21,
+   "stars": 30,
    "install": "dsh plugin --profile web add github:PKUfudawei/dsh-capability-menu",
    "added": "2026-08-22"
   },
@@ -11617,7 +11617,7 @@
     "zh": ""
    },
    "npm": null,
-   "stars": 20,
+   "stars": 24,
    "install": "dsh plugin --profile web add github:10086ggqq/dsh_theme_terraria",
    "added": "2026-08-24"
   },
@@ -11632,7 +11632,7 @@
     "zh": ""
    },
    "npm": null,
-   "stars": 20,
+   "stars": 22,
    "install": "dsh plugin --profile web add github:yoli-mi/dsh-client-ui-custom",
    "added": "2026-08-24"
   },
@@ -11662,7 +11662,7 @@
     "zh": ""
    },
    "npm": null,
-   "stars": 20,
+   "stars": 23,
    "install": "dsh plugin --profile web add github:ADWMC/helm-d",
    "added": "2026-08-24"
   },
@@ -11677,10 +11677,145 @@
     "zh": ""
    },
    "npm": null,
-   "stars": 20,
+   "stars": 25,
    "install": "dsh plugin --profile web add github:Yi-111-a/dsh-jingling",
    "added": "2026-08-15"
+  },
+  {
+   "name": "Agentkey",
+   "owner": "chainbase-labs",
+   "url": "https://github.com/chainbase-labs/Agentkey",
+   "page": "",
+   "category": "tools",
+   "description": {
+    "en": "Connect your AI agent to the world — Web search, Social media, Crypto & On-chain data. One plugin, zero extra config.",
+    "zh": ""
+   },
+   "npm": null,
+   "stars": 600,
+   "install": "dsh plugin --profile web add github:chainbase-labs/Agentkey",
+   "added": "2026-08-24"
+  },
+  {
+   "name": "dsh-infinite-gen-2",
+   "owner": "Minglink",
+   "url": "https://github.com/Minglink/dsh-infinite-gen-2",
+   "page": "",
+   "category": "skills",
+   "description": {
+    "en": "DeepSeek 专用破甲插件「无限二代」dsh-infinite-gen-2 — armor-breaking plugin for DeepSeek稳定化破甲提示词，求 Star 收藏 ⭐",
+    "zh": ""
+   },
+   "npm": null,
+   "stars": 307,
+   "install": "dsh plugin --profile web add github:Minglink/dsh-infinite-gen-2",
+   "added": "2026-08-25"
+  },
+  {
+   "name": "AgentDebugX",
+   "owner": "AgentDebugX",
+   "url": "https://github.com/AgentDebugX/AgentDebugX",
+   "page": "",
+   "category": "dev",
+   "description": {
+    "en": "A debugging framework for agentic AI systems: diagnose failures, attribute root causes, recover with evidence, and validate fixes through reruns.",
+    "zh": ""
+   },
+   "npm": null,
+   "stars": 50,
+   "install": "dsh plugin --profile web add github:AgentDebugX/AgentDebugX",
+   "added": "2026-08-25"
+  },
+  {
+   "name": "dsh-preset-plus",
+   "owner": "Rain-kl",
+   "url": "https://github.com/Rain-kl/dsh-preset-plus",
+   "page": "",
+   "category": "workflow",
+   "description": {
+    "en": "DSH 预设编辑器插件, 支持一键破甲.",
+    "zh": ""
+   },
+   "npm": null,
+   "stars": 28,
+   "install": "dsh plugin --profile web add github:Rain-kl/dsh-preset-plus",
+   "added": "2026-08-25"
+  },
+  {
+   "name": "dsh-strata",
+   "owner": "jsdvjx",
+   "url": "https://github.com/jsdvjx/dsh-strata",
+   "page": "",
+   "category": "sessions",
+   "description": {
+    "en": "Session strata for the DeepSeek Harness Web GUI: the transcript's scrollbar becomes a to-scale, colour-coded map of the whole run, with your own messages emphasised and clickable anchors.",
+    "zh": ""
+   },
+   "npm": "dsh-strata",
+   "stars": 24,
+   "install": "dsh plugin --profile web add dsh-strata",
+   "added": "2026-08-25"
+  },
+  {
+   "name": "dsh-timeline",
+   "owner": "houyanchao",
+   "url": "https://github.com/houyanchao/dsh-timeline",
+   "page": "",
+   "category": "skills",
+   "description": {
+    "en": "为 DeepSeek Harness（DSH）打造的会话效率插件，时间轴导航、收藏文件夹、对话导出、提示词库、闪记。",
+    "zh": ""
+   },
+   "npm": "dsh-timeline",
+   "stars": 22,
+   "install": "dsh plugin --profile web add dsh-timeline",
+   "added": "2026-08-20"
+  },
+  {
+   "name": "dsh-harbor",
+   "owner": "ZSeven-W",
+   "url": "https://github.com/ZSeven-W/dsh-harbor",
+   "page": "",
+   "category": "dev",
+   "description": {
+    "en": "DeepSeek Harness (DSH) plugin: a read-only ledger for the plugins you already have installed — a capability inventory with file:line evidence, declared-vs-detected reconciliation, cross-profile version drift, and a diff of what changed since the last scan.",
+    "zh": ""
+   },
+   "npm": null,
+   "stars": 22,
+   "install": "dsh plugin --profile web add github:ZSeven-W/dsh-harbor",
+   "added": "2026-08-24"
+  },
+  {
+   "name": "grove",
+   "owner": "alxshelepenok",
+   "url": "https://github.com/alxshelepenok/grove",
+   "page": "",
+   "category": "workflow",
+   "description": {
+    "en": "A formal workflow protocol that keeps AI coding agents on track through machine-enforced invariants, verified evidence, and structured context. Designed to keep deep, long-running projects coherent across sessions, agents, and months.",
+    "zh": ""
+   },
+   "npm": null,
+   "stars": 21,
+   "install": "dsh plugin --profile web add github:alxshelepenok/grove",
+   "added": "2026-08-24"
+  },
+  {
+   "name": "dsh-archive-manager",
+   "owner": "MichengAI",
+   "url": "https://github.com/MichengAI/dsh-archive-manager",
+   "page": "",
+   "category": "sessions",
+   "description": {
+    "en": "DSH Archive Manager 基于 DeepSeek Harness 的归档会话管理插件",
+    "zh": ""
+   },
+   "npm": "@michengai/dsh-archive-manager",
+   "stars": 21,
+   "install": "dsh plugin --profile web add @michengai/dsh-archive-manager",
+   "added": "2026-08-24"
   }
  ],
- "githubExtra": 25
+ "githubExtra": 9
 }
