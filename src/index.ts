@@ -122,11 +122,15 @@ export function apply(ctx: AppContext, config: Config): void {
   const workerTarget = join(updateHome, 'dsh-update-worker.mjs')
   // 一键重启 dsh：/restart 端点把原进程的 pid/execPath/execArgv/argv/cwd 写入
   // spec，spawn 一个 detached 的 restart 助手（同 worker 模式），由助手杀旧进程
-  // 后按完全相同方式重新拉起 dsh。restartRequested 防连点导致重复拉起。
+  // 后按完全相同方式重新拉起 dsh。restartRequested 防连点导致重复拉起；带 TTL
+  // 是因为助手 spawn 成功后仍可能失败（杀进程被拒等），此时进程不死、内存标记
+  // 无法自然复位，不设 TTL 按钮会永久失效。
   const restartSource = join(pluginRoot, 'scripts', 'restart-dsh.mjs')
   const restartTarget = join(updateHome, 'dsh-restart.mjs')
   const restartSpecPath = join(updateHome, 'restart.json')
+  const RESTART_REQUEST_TTL_MS = 60_000
   let restartRequested = false
+  let restartRequestedAt = 0
   // /status 快照缓存：面板打开/任务轮询不再每次全量跑 git 子进程。
   const STATUS_TTL_MS = 5_000
   let statusCache: { at: number; repo: Record<string, unknown>; plugins: Array<Record<string, unknown>> } | null = null
@@ -470,12 +474,15 @@ export function apply(ctx: AppContext, config: Config): void {
       && data.plugins.every((p: any) => p && typeof p.name === 'string' && typeof p.url === 'string')
   }
 
+  /** 注册表唯一网络端点：模块级字面量常量，杜绝任何外部输入进入拉取链路（SSRF 防线）。 */
+  const REGISTRY_URL = 'https://raw.githubusercontent.com/Britneycode/dsh-update-center/main/plugins.json'
+
   /** 直接 fetch 拉取（不走代理），带超时与大小上限；失败返回 null。 */
-  async function fetchRegistryTextDirect(url: string): Promise<string | null> {
+  async function fetchRegistryTextDirect(): Promise<string | null> {
     const controller = new AbortController()
     const timer = setTimeout(() => controller.abort(), 15_000)
     try {
-      const response = await fetch(url, { signal: controller.signal, headers: { accept: 'application/json' } })
+      const response = await fetch(REGISTRY_URL, { signal: controller.signal, headers: { accept: 'application/json' } })
       if (!response.ok) return null
       const text = await response.text()
       return text.length > REGISTRY_MAX_BYTES ? null : text
@@ -488,11 +495,11 @@ export function apply(ctx: AppContext, config: Config): void {
 
   /** 拉取注册表文本：配置了代理时优先走 curl（按调用时环境变量代理；Windows 10+
    *  自带 curl.exe，Unix 亦普遍可用），失败自动降级直连重试一次；未配置代理时
-   *  直接 fetch。端点由调用方以字面量传入。 */
-  async function fetchRegistryText(url: string): Promise<string | null> {
+   *  直接 fetch。端点为模块级字面量常量 REGISTRY_URL。 */
+  async function fetchRegistryText(): Promise<string | null> {
     const proxy = await proxyPromise
     if (proxy) {
-      const r = await execAsync('curl', ['-sSLf', '--max-time', '20', '--max-filesize', String(REGISTRY_MAX_BYTES), '-H', 'accept: application/json', url], undefined, 60_000, {
+      const r = await execAsync('curl', ['-sSLf', '--max-time', '20', '--max-filesize', String(REGISTRY_MAX_BYTES), '-H', 'accept: application/json', REGISTRY_URL], undefined, 60_000, {
         HTTPS_PROXY: proxy,
         HTTP_PROXY: proxy,
         https_proxy: proxy,
@@ -502,15 +509,15 @@ export function apply(ctx: AppContext, config: Config): void {
       // 代理不可用（超时/握手失败等）时不立刻失败：降级直连重试一次，
       // 避免代理一抖整个市场清单长时间回退到旧缓存。
       logger?.warn?.('[%s] 注册表经代理拉取失败（curl exit=%s），降级直连重试', name, r.code)
-      return fetchRegistryTextDirect(url)
+      return fetchRegistryTextDirect()
     }
-    return fetchRegistryTextDirect(url)
+    return fetchRegistryTextDirect()
   }
 
   /** 网络拉取：本仓库根目录 plugins.json 注册表（raw 直链，字面量端点）；
    *  失败返回 null，由磁盘缓存与随包快照兜底。 */
   async function fetchRegistryFromNetwork(): Promise<{ source: string; data: any } | null> {
-    const text = await fetchRegistryText('https://raw.githubusercontent.com/Britneycode/dsh-update-center/main/plugins.json')
+    const text = await fetchRegistryText()
     if (!text) return null
     try {
       const data = JSON.parse(text)
@@ -1074,7 +1081,7 @@ export function apply(ctx: AppContext, config: Config): void {
           }))
         }
         if (path === '/restart') {
-          if (restartRequested) {
+          if (restartRequested && Date.now() - restartRequestedAt < RESTART_REQUEST_TTL_MS) {
             return send(200, { ok: false, result: '重启请求已提交，dsh 正在重启，请稍后刷新页面。' })
           }
           const active = latestJob()
@@ -1085,6 +1092,7 @@ export function apply(ctx: AppContext, config: Config): void {
             return send(200, { ok: false, result: `重启助手不存在: ${restartSource}` })
           }
           restartRequested = true
+          restartRequestedAt = Date.now()
           mkdirSync(updateHome, { recursive: true })
           copyFileSync(restartSource, restartTarget)
           writeJsonAtomic(restartSpecPath, {

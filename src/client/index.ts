@@ -187,6 +187,9 @@ function buildPanel(): HTMLElement {
 
   const buttons = new Set<HTMLButtonElement>([checkButton, updateAllButton, restartButton])
   let checked = false
+  // 最近一次 /check 的完整结果（含 npm latest、link behind 等远端信息）。
+  // 更新任务完成后据此与 /status 的新版本号合并，避免每更新一个插件就要重新检查。
+  let lastCheckData: any = null
   let activeJobId = ''
   let marketData: any = null
   let marketQuery = ''
@@ -202,6 +205,61 @@ function buildPanel(): HTMLElement {
       return (plugin.kind === 'npm' && plugin.latest && plugin.latest !== plugin.version)
         || ((plugin.kind === 'link' || plugin.kind === 'preset') && Number(git.behind) > 0 && !git.dirty)
     }).length
+  }
+
+  /** 更新任务完成后合成状态：/status 提供最新的本地版本号（新装/更新后的真实
+   *  版本、新插件条目），上次 /check 提供尚未更新插件的远端信息（npm latest、
+   *  git behind）。刚更新成功的插件标记为已最新。这样更新完一个插件后其余
+   *  插件的更新按钮仍然可用，不必重新“检查更新”。 */
+  function mergeStatusAfterJob(fresh: any, updatedTargets: Set<string>): any {
+    if (!lastCheckData) return fresh
+    const checkPlugins: any[] = Array.isArray(lastCheckData.plugins) ? lastCheckData.plugins : []
+    const checkByName = new Map(checkPlugins.map((plugin) => [String(plugin.name), plugin]))
+    const plugins = (Array.isArray(fresh.plugins) ? fresh.plugins : []).map((plugin: any) => {
+      const check = checkByName.get(String(plugin.name))
+      if (!check) {
+        // 上次检查后新装的插件（如任务里刚 install）：装的就是最新版。
+        if (plugin.kind === 'npm' && plugin.version) return { ...plugin, latest: plugin.version }
+        return plugin
+      }
+      const merged = { ...plugin }
+      if (updatedTargets.has(String(plugin.name))) {
+        if (plugin.kind === 'npm') {
+          if (plugin.version) merged.latest = plugin.version
+          else delete merged.latest // 读不到新版本号时宁可显示“未检查”，不残留旧的“可更新”
+        }
+        if (merged.git) merged.git = { ...merged.git, behind: 0 }
+      } else {
+        if (check.latest != null) merged.latest = check.latest
+        if (check.git) merged.git = check.git
+        if (check.upstream) merged.upstream = check.upstream
+      }
+      return merged
+    })
+    // repo：/status 的 behind 是对本地远端 ref 的实时计数（上次 fetch 后仍有效），
+    // fetchOk 沿用上次检查结果。
+    const repo = { ...fresh.repo }
+    const checkRepo = lastCheckData.repo ?? {}
+    if (checkRepo.fetchOk !== undefined) {
+      repo.fetchOk = checkRepo.fetchOk
+      repo.fetchErr = checkRepo.fetchErr
+    }
+    // /status 不带 summary，客户端按合并结果重算。
+    const repoBehind = Number(repo?.git?.behind ?? 0)
+    const pluginUpdates = pluginUpdateCount(plugins)
+    return {
+      ...fresh,
+      repo,
+      plugins,
+      summary: {
+        repoUpdates: repoBehind,
+        pluginUpdates,
+        totalUpdates: (repoBehind > 0 ? 1 : 0) + pluginUpdates,
+        failedChecks: 0,
+      },
+      // 摘要时间沿用检查时间（合并结果的远端信息来自那次检查）。
+      ts: lastCheckData.ts ?? Date.now(),
+    }
   }
 
   /** 市场清单里与某个已安装依赖对应的条目（npm 名或仓库名匹配）。 */
@@ -293,17 +351,44 @@ function buildPanel(): HTMLElement {
           return
         }
         activeJobId = ''
-        checked = false
-        return refreshStatus(false, true).then(() => {
-          if (marketData) void loadMarket(false, true)
-          setBusy(false, activeButton)
-          if (job.status === 'completed') {
+        // 任务完成后不清空检查状态：把刚更新成功的插件标为已最新，其余插件
+        // 沿用上次检查的远端信息，更新按钮继续可用（无需重新“检查更新”）。
+        const updatedTargets = new Set<string>()
+        if (job.status === 'completed') {
+          if (Array.isArray(job.results)) {
+            for (const entry of job.results) {
+              if (entry?.ok) updatedTargets.add(String(entry.target))
+            }
+          } else if ((job.action === 'npm' || job.action === 'link') && job.target) {
+            updatedTargets.add(String(job.target))
+          }
+        }
+        const done = (status: 'completed' | 'failed') => {
+          if (status === 'completed') {
             const suffix = job.restartRequired ? '\n\n更新已核验完成，现在可以重启 dsh web。' : ''
             say(jobText(job) + suffix, 'ok')
           } else {
             say(jobText(job), 'err')
           }
-        })
+        }
+        // 状态刷新与任务轮询是两种失败：任务已终态，状态刷新失败不该重试轮询，
+        // 只需恢复按钮并展示任务结果。
+        return fetchJson('/status?fresh=1')
+          .then((fresh) => {
+            if (!fresh?.ok) throw new Error(fresh?.error || '状态读取失败')
+            const merged = checked && lastCheckData ? mergeStatusAfterJob(fresh, updatedTargets) : fresh
+            if (merged !== fresh) lastCheckData = merged
+            // 先恢复按钮再 render：render 会按“任务已结束”重新启用工具栏按钮，
+            // 顺序反了会把 setBusy 记录的旧禁用态又恢复回去。
+            setBusy(false, activeButton)
+            render(merged)
+            if (marketData) void loadMarket(false, true)
+            done(job.status === 'completed' ? 'completed' : 'failed')
+          })
+          .catch((error) => {
+            setBusy(false, activeButton)
+            say(jobText(job) + `\n\n（列表状态刷新失败：${String(error)}，可稍后点“检查更新”重新获取。）`, 'info')
+          })
       })
       .catch((error) => {
         if (!page.isConnected) return
@@ -631,10 +716,16 @@ function buildPanel(): HTMLElement {
     renderRepo(data?.repo)
     renderPlugins(Array.isArray(data?.plugins) ? data.plugins : [])
     updateSummary(data)
-    updateAllButton.disabled = !checked || pluginUpdateCount(data?.plugins ?? []) === 0
-    // 有更新任务执行时不建议重启（会中断后台任务），服务端同样拒绝
+    // “全部更新”不依赖本地检查状态：服务端 /update-all 会先做一次完整检查再
+    // 组批量任务，因此除了有后台任务在跑时都保持可点。
     const job = data?.job ?? {}
-    restartButton.disabled = job.status === 'queued' || job.status === 'running'
+    const jobRunning = job.status === 'queued' || job.status === 'running'
+    updateAllButton.disabled = jobRunning
+    updateAllButton.title = jobRunning
+      ? '有更新任务正在执行，请等待完成后再批量更新'
+      : '先检查远端，再一键更新所有可更新的插件（不含 dsh 本体）'
+    // 有更新任务执行时不建议重启（会中断后台任务），服务端同样拒绝
+    restartButton.disabled = jobRunning
     restartButton.title = restartButton.disabled
       ? '有更新任务正在执行，请等待完成后再重启'
       : '更新完成后一键重启 dsh web（当前会话会中断）'
@@ -644,7 +735,9 @@ function buildPanel(): HTMLElement {
     return fetchJson(fresh ? '/status?fresh=1' : '/status')
       .then((data) => {
         if (!data?.ok) throw new Error(data?.error || '状态读取失败')
-        render(data)
+        // 已检查过时用检查数据补全远端信息（/status 不带 latest/behind），
+        // 避免禁用/启用等轻量动作后丢失“可更新”徽章。
+        render(checked && lastCheckData && !data.summary ? mergeStatusAfterJob(data, new Set()) : data)
         if (showJob) {
           resumeJob(data.job)
           if (data?.job?.status === 'completed') say(jobText(data.job), 'ok')
@@ -672,22 +765,55 @@ function buildPanel(): HTMLElement {
     renderMarket()
   })
   refreshButton.addEventListener('click', () => void loadMarket(true, false))
-  bindAction(updateAllButton, '/update-all', {}, '把所有可更新的插件（不含 dsh 本体）排成一个后台批量任务串行执行，单个失败不影响其余。任务完成后再重启，是否继续？', '正在检查并创建批量更新任务…')
+  bindAction(updateAllButton, '/update-all', {}, '将先自动检查远端更新，再把所有可更新的插件（不含 dsh 本体）排成一个后台批量任务串行执行，单个失败不影响其余。检查可能需要十几秒。任务完成后再重启，是否继续？', '正在检查并创建批量更新任务，可能需要十几秒…')
+
+  /** 重启下发后等待服务恢复：先看到请求失败（旧进程已停），再看到成功（新
+   *  进程就绪），然后自动刷新页面。期间保持全部按钮禁用，避免把请求打进
+   *  一个正在关闭/正在启动的服务。超时则恢复按钮并提示手动处理。 */
+  function waitForRestart(): void {
+    const deadline = Date.now() + 180_000
+    let sawDown = false
+    const tick = () => {
+      if (!page.isConnected) return
+      if (Date.now() > deadline) {
+        setBusy(false, restartButton)
+        say('等待 dsh 重启超时。请手动刷新页面；若一直打不开，可查看 ~/.dsh/update-center/dsh-web.stderr.log 或用 Start-DSH 启动并查看控制台输出。', 'err')
+        return
+      }
+      fetchJson('/status')
+        .then(() => {
+          if (sawDown) {
+            say('dsh 已重启完成，正在刷新页面…', 'ok')
+            window.location.reload()
+            return
+          }
+          // 旧进程还活着（重启指令的延迟窗口内），继续等它退出
+          window.setTimeout(tick, 1000)
+        })
+        .catch(() => {
+          sawDown = true
+          window.setTimeout(tick, 2000)
+        })
+    }
+    window.setTimeout(tick, 1500)
+  }
 
   restartButton.addEventListener('click', () => {
     const job = lastStatusData?.job ?? {}
     const active = job.status === 'queued' || job.status === 'running'
-    const confirmText = active
-      ? '当前有更新任务正在执行，重启会中断它（后台任务可能未完成）。确定现在重启 dsh web 吗？'
-      : '重启 dsh web？当前会话会中断，重启完成后请刷新页面。'
-    if (!window.confirm(confirmText)) return
+    // 按钮在任务运行中已被禁用；这里兜底面板状态滞后的情形（服务端同样会拒绝）
+    if (active) {
+      say('有更新任务正在执行，请等待任务完成后再重启（重启会中断后台任务）。', 'err')
+      return
+    }
+    if (!window.confirm('重启 dsh web？当前会话会中断，重启完成后页面会自动刷新。')) return
     setBusy(true, restartButton, '重启中…')
     say('正在下发重启指令…', 'info')
     fetchJson('/restart', { method: 'POST', body: '{}' })
       .then((data) => {
-        setBusy(false, restartButton)
         if (!data?.ok) throw new Error(data?.result || data?.error || '重启失败')
-        say('重启指令已下发，dsh 即将重启，请稍后刷新页面。', 'ok')
+        say('重启指令已下发，dsh 即将重启；恢复后面板会自动刷新。', 'info')
+        waitForRestart()
       })
       .catch((error) => {
         setBusy(false, restartButton)
@@ -702,6 +828,7 @@ function buildPanel(): HTMLElement {
       .then((data) => {
         if (!data?.ok) throw new Error(data?.error || '检查失败')
         checked = true
+        lastCheckData = data
         render(data)
         if (marketData) renderMarket()
         const total = Number(data?.summary?.totalUpdates ?? 0)
