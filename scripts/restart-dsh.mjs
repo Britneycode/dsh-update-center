@@ -17,8 +17,9 @@
  */
 
 import { spawn, spawnSync } from 'node:child_process'
-import { appendFileSync, openSync, readFileSync } from 'node:fs'
+import { appendFileSync, existsSync, openSync, readFileSync } from 'node:fs'
 import { dirname, join } from 'node:path'
+import { fileURLToPath } from 'node:url'
 
 function processAlive(pid) {
   try {
@@ -84,6 +85,15 @@ function main() {
     // 等端口/文件句柄释放后再拉起，避免新进程绑定同一端口失败
     setTimeout(() => {
       if (typeof execPath !== 'string' || !execPath) process.exit(1)
+      // 拉起新进程前重打 bash-terminal 兼容补丁：插件更新会覆盖 profile 安装
+      // 副本里的补丁（详见 repair-bash-terminal.mjs 头注释）。repair 与本助手
+      // 同目录部署；缺失（未部署/被删）则跳过，不阻断重启。
+      try {
+        const repairScript = join(dirname(fileURLToPath(import.meta.url)), 'repair-bash-terminal.mjs')
+        if (existsSync(repairScript)) {
+          spawnSync(process.execPath, [repairScript], { windowsHide: true, timeout: 15_000 })
+        }
+      } catch { /* 补丁失败不阻断重启 */ }
       try {
         appendFileSync(stdoutLog, `\n===== dsh restarted at ${new Date().toISOString()} (pid ${pid} → respawn) =====\n`)
       } catch { /* 日志写失败不影响重启 */ }

@@ -127,6 +127,10 @@ export function apply(ctx: AppContext, config: Config): void {
   // 无法自然复位，不设 TTL 按钮会永久失效。
   const restartSource = join(pluginRoot, 'scripts', 'restart-dsh.mjs')
   const restartTarget = join(updateHome, 'dsh-restart.mjs')
+  // bash-terminal 兼容补丁重打器：随 restart 助手一并部署到 update-home，
+  // 由助手在拉起新进程前调用（插件更新会覆盖 profile 安装副本里的补丁）。
+  const repairSource = join(pluginRoot, 'scripts', 'repair-bash-terminal.mjs')
+  const repairTarget = join(updateHome, 'repair-bash-terminal.mjs')
   const restartSpecPath = join(updateHome, 'restart.json')
   const RESTART_REQUEST_TTL_MS = 60_000
   let restartRequested = false
@@ -192,6 +196,9 @@ export function apply(ctx: AppContext, config: Config): void {
     const proxy = await proxyPromise
     mkdirSync(jobsDir, { recursive: true })
     copyFileSync(workerSource, workerTarget)
+    // 更新任务可能覆盖 bash-terminal 的兼容补丁：先把补丁重打器部署到位，
+    // 供 restart 助手与外部启动脚本（Start-DSH.ps1）在拉起 dsh 前调用。
+    if (existsSync(repairSource)) copyFileSync(repairSource, repairTarget)
     const id = `${Date.now()}-${randomUUID().slice(0, 8)}`
     const statePath = join(jobsDir, `${id}.json`)
     const specPath = join(jobsDir, `${id}.spec.json`)
@@ -1095,6 +1102,7 @@ export function apply(ctx: AppContext, config: Config): void {
           restartRequestedAt = Date.now()
           mkdirSync(updateHome, { recursive: true })
           copyFileSync(restartSource, restartTarget)
+          if (existsSync(repairSource)) copyFileSync(repairSource, repairTarget)
           writeJsonAtomic(restartSpecPath, {
             pid: process.pid,
             execPath: process.execPath,
