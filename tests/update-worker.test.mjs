@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict'
 import { execFileSync } from 'node:child_process'
-import { mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs'
+import { existsSync, mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import test from 'node:test'
@@ -683,6 +683,103 @@ test('batch job fails when every sub task fails', async () => {
     assert.equal(state.restartRequired, false)
     assert.match(state.error, /first/)
     assert.match(state.error, /second/)
+  } finally {
+    rmSync(dir, { recursive: true, force: true })
+  }
+})
+
+const toPosix = (p) => p.split(/[\\/]/).join('/')
+
+test('enumerates workspace package dirs following the tsdown/pnpm globs', () => {
+  const repo = mkdtempSync(join(tmpdir(), 'uc-ws-'))
+  try {
+    mkdirSync(join(repo, 'packages', 'host', 'real'), { recursive: true })
+    mkdirSync(join(repo, 'packages', 'host', 'ghost'), { recursive: true })
+    mkdirSync(join(repo, 'vendor', 'tool'), { recursive: true })
+    mkdirSync(join(repo, 'apps', 'cli'), { recursive: true })
+    const dirs = worker.enumerateWorkspaceDirs(repo).map(toPosix)
+    const root = toPosix(repo)
+    assert.ok(dirs.includes(`${root}/packages/host/real`))
+    assert.ok(dirs.includes(`${root}/packages/host/ghost`))
+    assert.ok(dirs.includes(`${root}/vendor/tool`))
+    assert.ok(dirs.includes(`${root}/apps/cli`))
+  } finally {
+    rmSync(repo, { recursive: true, force: true })
+  }
+})
+
+test('finds only untracked artifact-only ghost dirs as stale residuals', () => {
+  const repo = mkdtempSync(join(tmpdir(), 'uc-stale-'))
+  try {
+    // 正常包：有 package.json → 不报
+    mkdirSync(join(repo, 'packages', 'a', 'real', 'lib'), { recursive: true })
+    writeFileSync(join(repo, 'packages', 'a', 'real', 'package.json'), '{}')
+    // 空壳 + 只有构建产物 + git 不跟踪 → 报告
+    mkdirSync(join(repo, 'packages', 'a', 'ghost', 'node_modules', 'x'), { recursive: true })
+    mkdirSync(join(repo, 'packages', 'a', 'ghost', 'lib'), { recursive: true })
+    // 空壳但含非白名单内容（可能是本地工作）→ 不报
+    mkdirSync(join(repo, 'packages', 'a', 'ghostuser', 'src'), { recursive: true })
+    // 空壳但 git 有跟踪文件 → 不报
+    mkdirSync(join(repo, 'packages', 'a', 'trackedghost', 'lib'), { recursive: true })
+    // git 查询失败 → 不报
+    mkdirSync(join(repo, 'vendor', 'ghostfail', 'dist'), { recursive: true })
+    const trackedRel = 'packages/a/trackedghost'
+    const runner = (command, args) => {
+      if (command !== 'git' || args[0] !== 'ls-files') return { ok: false, code: null, out: '', err: '' }
+      const rel = args[2]
+      if (rel === trackedRel) return { ok: true, code: 0, out: `${trackedRel}/src/index.js\n`, err: '' }
+      if (rel === 'vendor/ghostfail') return { ok: false, code: null, out: '', err: 'boom' }
+      return { ok: true, code: 0, out: '', err: '' }
+    }
+    const stale = worker.findStaleResidualDirs(repo, runner).map(toPosix)
+    assert.equal(stale.length, 1)
+    assert.ok(stale[0].endsWith('packages/a/ghost'))
+  } finally {
+    rmSync(repo, { recursive: true, force: true })
+  }
+})
+
+test('dsh job cleans stale residual dirs after pull and before build', async () => {
+  const dir = mkdtempSync(join(tmpdir(), 'uc-dsh-stale-'))
+  const repoDir = join(dir, 'repo')
+  mkdirSync(join(repoDir, 'packages', 'host', 'apiproxy', 'lib'), { recursive: true })
+  mkdirSync(join(repoDir, 'apps', 'cli'), { recursive: true })
+  writeFileSync(join(repoDir, 'apps', 'cli', 'package.json'), '{}')
+  const specPath = join(dir, 'spec.json')
+  const statePath = join(dir, 'job.json')
+  const latestPath = join(dir, 'latest.json')
+  let pulls = 0
+  writeFileSync(specPath, JSON.stringify({
+    id: 'job-dsh-stale',
+    action: 'dsh',
+    target: 'dsh',
+    full: true,
+    remote: 'origin',
+    branch: 'master',
+    repoDir,
+    statePath,
+    latestPath,
+  }))
+  const runCommand = (command, args, cwd) => {
+    if (command === 'git') {
+      if (args[0] === 'status') return { ok: true, code: 0, out: '', err: '' }
+      if (args[0] === 'rev-parse' && args[1] === '--abbrev-ref') return { ok: true, code: 0, out: 'master', err: '' }
+      if (args[0] === 'rev-parse') return { ok: true, code: 0, out: pulls ? 'bbbbbbbbbbbb' : 'aaaaaaaaaaaa', err: '' }
+      if (args[0] === 'pull') { pulls += 1; return { ok: true, code: 0, out: '', err: '' } }
+      if (args[0] === 'ls-files') {
+        const rel = args[2]
+        if (rel === 'packages/host/apiproxy') return { ok: true, code: 0, out: '', err: '' }
+        return { ok: false, code: null, out: '', err: 'unexpected' }
+      }
+    }
+    return { ok: true, code: 0, out: '', err: '' }
+  }
+  try {
+    await worker.runWorker(specPath, { runCommand })
+    const state = JSON.parse(readFileSync(statePath, 'utf8'))
+    assert.equal(state.status, 'completed')
+    assert.ok(state.steps.some((step) => step.includes('packages/host/apiproxy')))
+    assert.equal(existsSync(join(repoDir, 'packages', 'host', 'apiproxy')), false)
   } finally {
     rmSync(dir, { recursive: true, force: true })
   }

@@ -1,6 +1,6 @@
 import { spawnSync } from 'node:child_process'
-import { copyFileSync, existsSync, mkdirSync, readFileSync, renameSync, writeFileSync } from 'node:fs'
-import { dirname, join, resolve } from 'node:path'
+import { copyFileSync, existsSync, mkdirSync, readFileSync, readdirSync, renameSync, rmSync, writeFileSync } from 'node:fs'
+import { dirname, join, relative, resolve } from 'node:path'
 import { pathToFileURL } from 'node:url'
 
 export function verifyNpmUpdate({ before, expected, installed }) {
@@ -490,6 +490,69 @@ async function runBatchJob(spec, state, runner) {
   })
 }
 
+/** tsdown/pnpm workspace glob 覆盖的包目录（packages/<scope>/<name>、vendor/<name>、apps/cli）。 */
+export function enumerateWorkspaceDirs(repoDir) {
+  const out = []
+  const packagesDir = join(repoDir, 'packages')
+  try {
+    for (const scope of readdirSync(packagesDir, { withFileTypes: true })) {
+      if (!scope.isDirectory()) continue
+      const scopeDir = join(packagesDir, scope.name)
+      for (const pkg of readdirSync(scopeDir, { withFileTypes: true })) {
+        if (pkg.isDirectory()) out.push(join(scopeDir, pkg.name))
+      }
+    }
+  } catch { /* 无 packages 目录则跳过 */ }
+  try {
+    for (const dirent of readdirSync(join(repoDir, 'vendor'), { withFileTypes: true })) {
+      if (dirent.isDirectory()) out.push(join(repoDir, 'vendor', dirent.name))
+    }
+  } catch { /* 无 vendor 目录则跳过 */ }
+  out.push(join(repoDir, 'apps', 'cli'))
+  return out
+}
+
+/** 空壳目录里允许存在的构建产物名；出现其余内容即视为可能含本地工作，跳过不删。 */
+const RESIDUAL_ENTRY_WHITELIST = new Set(['lib', 'dist', 'node_modules', '.turbo'])
+
+/**
+ * 找出上游删包残留的空壳目录：git pull 不会清除 gitignore 的 lib/node_modules，
+ * 会被 workspace glob 卷进构建图（曾致 tsdown [MISSING_EXPORT] 构建失败）。
+ * 只报告同时满足三个条件的目录：无 package.json、git 不跟踪其中任何文件、
+ * 目录内容全部是白名单内的构建产物。git 查询失败时宁可保守（不报告）。
+ */
+export function findStaleResidualDirs(repoDir, runner) {
+  const stale = []
+  for (const dir of enumerateWorkspaceDirs(repoDir)) {
+    if (existsSync(join(dir, 'package.json'))) continue
+    const rel = relative(repoDir, dir).replaceAll('\\', '/')
+    const tracked = runner('git', ['ls-files', '--', rel], repoDir, 10_000)
+    if (!tracked.ok || tracked.out.trim()) continue
+    try {
+      const entries = readdirSync(dir)
+      if (!entries.length || !entries.every((entry) => RESIDUAL_ENTRY_WHITELIST.has(entry))) continue
+      stale.push(dir)
+    } catch { /* 目录不可读则跳过 */ }
+  }
+  return stale
+}
+
+function cleanupStaleResidualDirs(repoDir, state, runner) {
+  let staleDirs
+  try {
+    staleDirs = findStaleResidualDirs(repoDir, runner)
+  } catch (error) {
+    state.steps.push(`残留目录扫描失败（不影响本次更新）：${error instanceof Error ? error.message : String(error)}`)
+    return
+  }
+  for (const dir of staleDirs) {
+    try {
+      rmSync(dir, { recursive: true, force: true })
+      state.steps.push(`已清理上游删包残留目录：${relative(repoDir, dir).replaceAll('\\', '/')}`)
+    } catch { /* 删除失败不阻断更新；build 会以原始错误暴露问题 */ }
+  }
+}
+
 async function runDshJob(spec, state, runner) {
   const dir = spec.repoDir
   const networkEnv = spec.proxy
@@ -517,6 +580,9 @@ async function runDshJob(spec, state, runner) {
   const after = requireCommand(runner('git', ['rev-parse', 'HEAD'], dir, 10_000), 'verify', '读取 dsh 更新后提交')
   const changed = before !== after
   state.steps.push(changed ? `Git 已更新：${before.slice(0, 10)} → ${after.slice(0, 10)}` : 'Git 已是最新')
+
+  // 上游删包残留清理：pull 后、install/build 前执行。失败不阻断更新。
+  cleanupStaleResidualDirs(dir, state, runner)
 
   if (spec.full) {
     updateState(spec, state, { stage: 'install', message: '正在安装 dsh 依赖' })
