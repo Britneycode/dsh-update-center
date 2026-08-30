@@ -784,3 +784,133 @@ test('dsh job cleans stale residual dirs after pull and before build', async () 
     rmSync(dir, { recursive: true, force: true })
   }
 })
+
+function npmFixture(dir) {
+  const profileDir = join(dir, 'profile')
+  const packageDir = join(profileDir, 'node_modules', '@scope', 'plugin')
+  mkdirSync(packageDir, { recursive: true })
+  const setVersion = (version) => writeFileSync(
+    join(packageDir, 'package.json'),
+    JSON.stringify({ name: '@scope/plugin', version }),
+  )
+  setVersion('0.1.5')
+  return { profileDir, setVersion }
+}
+
+test('rolls back an npm update when the installed version matches neither expected nor current latest', async () => {
+  const dir = mkdtempSync(join(tmpdir(), 'uc-npm-rollback-'))
+  const { profileDir, setVersion } = npmFixture(dir)
+  const specPath = join(dir, 'spec.json')
+  const statePath = join(dir, 'job.json')
+  const latestPath = join(dir, 'latest.json')
+  writeFileSync(specPath, JSON.stringify({
+    id: 'job-npm-rollback',
+    action: 'npm',
+    target: '@scope/plugin',
+    packageName: '@scope/plugin',
+    expectedVersion: '0.1.7',
+    profileDir,
+    statePath,
+    latestPath,
+  }))
+  const runCommand = (command, args) => {
+    if (command === 'pnpm' && args[0] === 'update') {
+      setVersion('0.2.0')
+      return { ok: true, code: 0, out: 'Done', err: '' }
+    }
+    if (command === 'npm') return { ok: true, code: 0, out: '"0.2.9"', err: '' }
+    if (command === 'pnpm' && args[0] === 'add' && args[1] === '@scope/plugin@0.1.5') {
+      setVersion('0.1.5')
+      return { ok: true, code: 0, out: 'Done', err: '' }
+    }
+    return { ok: false, code: null, out: '', err: `unexpected: ${command} ${args.join(' ')}` }
+  }
+  try {
+    await worker.runWorker(specPath, { runCommand })
+    const state = JSON.parse(readFileSync(statePath, 'utf8'))
+    assert.equal(state.status, 'failed')
+    assert.equal(state.stage, 'verify')
+    assert.ok(state.steps.some((step) => step.includes('已回滚到 0.1.5')))
+    assert.equal(JSON.parse(readFileSync(join(profileDir, 'node_modules', '@scope', 'plugin', 'package.json'), 'utf8')).version, '0.1.5')
+  } finally {
+    rmSync(dir, { recursive: true, force: true })
+  }
+})
+
+test('accepts an npm update that raced past the expected version when it equals the current latest', async () => {
+  const dir = mkdtempSync(join(tmpdir(), 'uc-npm-race-'))
+  const { profileDir, setVersion } = npmFixture(dir)
+  const specPath = join(dir, 'spec.json')
+  const statePath = join(dir, 'job.json')
+  const latestPath = join(dir, 'latest.json')
+  writeFileSync(specPath, JSON.stringify({
+    id: 'job-npm-race',
+    action: 'npm',
+    target: '@scope/plugin',
+    packageName: '@scope/plugin',
+    expectedVersion: '0.1.7',
+    profileDir,
+    statePath,
+    latestPath,
+  }))
+  const runCommand = (command, args) => {
+    if (command === 'pnpm' && args[0] === 'update') {
+      setVersion('0.2.9')
+      return { ok: true, code: 0, out: 'Done', err: '' }
+    }
+    if (command === 'npm') return { ok: true, code: 0, out: '"0.2.9"', err: '' }
+    return { ok: false, code: null, out: '', err: `unexpected: ${command} ${args.join(' ')}` }
+  }
+  try {
+    await worker.runWorker(specPath, { runCommand })
+    const state = JSON.parse(readFileSync(statePath, 'utf8'))
+    assert.equal(state.status, 'completed')
+    assert.equal(state.afterVersion, '0.2.9')
+    assert.ok(state.steps.some((step) => step.includes('按实际安装版本通过校验')))
+  } finally {
+    rmSync(dir, { recursive: true, force: true })
+  }
+})
+
+test('rollback-dsh job resets to the recorded pre-update commit and rebuilds', async () => {
+  const dir = mkdtempSync(join(tmpdir(), 'uc-rollback-dsh-'))
+  const repoDir = join(dir, 'repo')
+  mkdirSync(repoDir, { recursive: true })
+  const specPath = join(dir, 'spec.json')
+  const statePath = join(dir, 'job.json')
+  const latestPath = join(dir, 'latest.json')
+  const targetCommit = 'aaaaaaaaaaaa'
+  writeFileSync(specPath, JSON.stringify({
+    id: 'job-rollback-dsh',
+    action: 'rollback-dsh',
+    target: 'dsh',
+    commit: targetCommit,
+    remote: 'origin',
+    branch: 'master',
+    repoDir,
+    statePath,
+    latestPath,
+  }))
+  const runCommand = (command, args) => {
+    if (command === 'git') {
+      if (args[0] === 'status') return { ok: true, code: 0, out: '', err: '' }
+      if (args[0] === 'rev-parse' && args[1] === '--abbrev-ref') return { ok: true, code: 0, out: 'master', err: '' }
+      if (args[0] === 'rev-parse') return { ok: true, code: 0, out: 'cccccccccccc', err: '' }
+      if (args[0] === 'cat-file') return { ok: true, code: 0, out: '', err: '' }
+      if (args[0] === 'reset') return { ok: true, code: 0, out: '', err: '' }
+      if (args[0] === 'ls-files') return { ok: false, code: null, out: '', err: 'skip' }
+    }
+    return { ok: true, code: 0, out: '', err: '' }
+  }
+  try {
+    await worker.runWorker(specPath, { runCommand })
+    const state = JSON.parse(readFileSync(statePath, 'utf8'))
+    assert.equal(state.status, 'completed')
+    assert.equal(state.afterCommit, targetCommit)
+    assert.equal(state.restartRequired, true)
+    assert.ok(state.steps.some((step) => step.includes('已回退：cccccccccc → aaaaaaaaaa')))
+    assert.ok(state.steps.some((step) => step.includes('pnpm run build 完成')))
+  } finally {
+    rmSync(dir, { recursive: true, force: true })
+  }
+})

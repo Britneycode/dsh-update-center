@@ -110,6 +110,40 @@ function singleReporter(spec, state) {
   }
 }
 
+/** 查询 npm registry 某包当前 latest（更新竞态宽限用；失败返回 null）。 */
+export function queryNpmLatest(spec, runner, networkEnv) {
+  const r = runner('npm', ['view', spec.packageName, 'version', '--json'], spec.profileDir, 30_000, networkEnv)
+  if (!r.ok) return null
+  try {
+    const v = JSON.parse(String(r.out).trim())
+    return typeof v === 'string' ? v : null
+  } catch {
+    return null
+  }
+}
+
+/** 把包回滚到更新前版本：已恢复原样返回 null（无需或已回滚），失败返回原因。
+ *  目标是"更新失败 = 保持更新前状态"，不把半更新态留给用户。 */
+function rollbackNpmUpdate(spec, runner, reporter, beforeVersion, networkEnv) {
+  if (!beforeVersion) return '更新前版本未知，无法自动回滚，请检查当前安装状态'
+  const current = readPackageVersion(spec.profileDir, spec.packageName)
+  if (!current || current === beforeVersion) return null
+  reporter.progress({ stage: 'rollback', message: `正在回滚 ${spec.packageName} 到 ${beforeVersion}` })
+  const rb = runner('pnpm', ['add', `${spec.packageName}@${beforeVersion}`], spec.profileDir, 600_000, networkEnv)
+  const restored = readPackageVersion(spec.profileDir, spec.packageName)
+  if (rb.ok && restored === beforeVersion) {
+    reporter.step(`已回滚到 ${beforeVersion}，保持更新前状态`)
+    return null
+  }
+  return `自动回滚失败（当前 ${restored || '未安装'}，期望 ${beforeVersion}）：${commandFailure(rb)}`
+}
+
+/** 更新失败时先尝试回滚再抛错：回滚失败的原因并入任务错误，便于用户接手。 */
+function throwAfterRollback(stage, baseMessage, spec, runner, reporter, beforeVersion, networkEnv) {
+  const rollbackError = rollbackNpmUpdate(spec, runner, reporter, beforeVersion, networkEnv)
+  throw new JobError(stage, rollbackError ? `${baseMessage}\n${rollbackError}` : baseMessage)
+}
+
 async function performNpmUpdate(spec, runner, reporter) {
   const beforeVersion = readPackageVersion(spec.profileDir, spec.packageName)
   reporter.progress({
@@ -121,7 +155,9 @@ async function performNpmUpdate(spec, runner, reporter) {
     ? { HTTP_PROXY: spec.proxy, HTTPS_PROXY: spec.proxy, http_proxy: spec.proxy, https_proxy: spec.proxy }
     : undefined
   const result = runner('pnpm', ['update', spec.packageName, '--latest'], spec.profileDir, 600_000, networkEnv)
-  if (!result.ok) throw new JobError('update', `pnpm update 失败\n${commandFailure(result)}`)
+  if (!result.ok) {
+    throwAfterRollback('update', `pnpm update 失败\n${commandFailure(result)}`, spec, runner, reporter, beforeVersion, networkEnv)
+  }
   reporter.step('pnpm update 执行完成')
   reporter.progress({ stage: 'verify', message: '正在核对实际安装版本' })
   const installed = readPackageVersion(spec.profileDir, spec.packageName)
@@ -130,8 +166,20 @@ async function performNpmUpdate(spec, runner, reporter) {
     expected: spec.expectedVersion,
     installed,
   })
-  if (!verification.ok) throw new JobError('verify', verification.message)
-  reporter.step(verification.message)
+  let effectiveVersion = installed
+  if (!verification.ok) {
+    // 竞态宽限：检查更新与执行之间上游可能又发了新版，pnpm --latest 会装上
+    // 比任务期望更新的一版。装上的若就是此刻的 npm latest，按实际版本放行；
+    // 否则才视为失败并回滚。
+    const freshLatest = queryNpmLatest(spec, runner, networkEnv)
+    if (installed && freshLatest && installed === freshLatest) {
+      reporter.step(`更新期间上游发布了 ${freshLatest}，已按实际安装版本通过校验`)
+      effectiveVersion = freshLatest
+    } else {
+      throwAfterRollback('verify', verification.message, spec, runner, reporter, beforeVersion, networkEnv)
+    }
+  }
+  reporter.step(effectiveVersion === installed && verification.ok ? verification.message : `已安装 ${effectiveVersion}`)
   reporter.progress({ stage: 'reconcile', message: '正在同步 profile bundles' })
   const profileManifest = readPackage(spec.profileDir)
   const declares = bundleDeclared(spec.profileDir, spec.packageName)
@@ -150,7 +198,7 @@ async function performNpmUpdate(spec, runner, reporter) {
     status: 'completed',
     stage: 'completed',
     message: `${spec.packageName} 更新完成`,
-    afterVersion: installed,
+    afterVersion: effectiveVersion,
     changed: verification.changed,
     restartRequired: true,
     finishedAt: new Date().toISOString(),
@@ -606,6 +654,55 @@ async function runDshJob(spec, state, runner) {
   })
 }
 
+/** dsh 本体回退：reset --hard 到任务记录的"更新前提交"并完整重建。
+ *  源码回退了，lib/node_modules 等产物必须跟着重建，否则新旧混跑。 */
+async function runDshRollbackJob(spec, state, runner) {
+  const dir = spec.repoDir
+  const networkEnv = spec.proxy
+    ? { HTTP_PROXY: spec.proxy, HTTPS_PROXY: spec.proxy, http_proxy: spec.proxy, https_proxy: spec.proxy }
+    : undefined
+  const commit = String(spec.commit ?? '')
+  if (!/^[0-9a-f]{4,40}$/i.test(commit)) {
+    throw new JobError('preflight', `回退目标提交号非法: ${commit}`)
+  }
+  const status = requireCommand(runner('git', ['status', '--porcelain'], dir, 10_000), 'preflight', '读取 dsh Git 状态')
+  if (status) throw new JobError('preflight', `dsh 存在未提交改动，为避免覆盖本地工作，已停止回退：\n${status}`)
+  const currentBranch = requireCommand(runner('git', ['rev-parse', '--abbrev-ref', 'HEAD'], dir, 10_000), 'preflight', '读取 dsh 分支')
+  if (spec.branch && currentBranch !== spec.branch) {
+    throw new JobError('preflight', `当前分支为 ${currentBranch}，配置分支为 ${spec.branch}`)
+  }
+  const before = requireCommand(runner('git', ['rev-parse', 'HEAD'], dir, 10_000), 'preflight', '读取 dsh 当前提交')
+  if (before === commit) throw new JobError('preflight', 'dsh 已处于回退目标提交，无需回退')
+  requireCommand(runner('git', ['cat-file', '-e', `${commit}^{commit}`], dir, 10_000), 'preflight', '校验回退目标提交')
+  updateState(spec, state, {
+    stage: 'reset',
+    beforeCommit: before,
+    targetCommit: commit,
+    message: `正在回退 dsh 到 ${commit.slice(0, 10)}`,
+  })
+  requireCommand(runner('git', ['reset', '--hard', commit], dir, 60_000), 'reset', 'git reset ')
+  state.steps.push(`已回退：${before.slice(0, 10)} → ${commit.slice(0, 10)}（被回退的提交仍可用 git reflog 找回）`)
+  // 回退后的源码同样可能有上游删包残留，与正向更新共用清理逻辑
+  cleanupStaleResidualDirs(dir, state, runner)
+  updateState(spec, state, { stage: 'install', message: '正在安装 dsh 依赖' })
+  requireCommand(runner('pnpm', ['install'], dir, 600_000, networkEnv), 'install', 'pnpm install ')
+  state.steps.push('pnpm install 完成')
+  updateState(spec, state, { stage: 'build', message: '正在重新构建 dsh' })
+  requireCommand(runner('pnpm', ['run', 'build'], dir, 900_000, networkEnv), 'build', 'pnpm run build ')
+  state.steps.push('pnpm run build 完成')
+  const afterVersion = readPackage(dir)?.version ?? null
+  updateState(spec, state, {
+    status: 'completed',
+    stage: 'completed',
+    message: `dsh 已回退到 ${commit.slice(0, 10)}，请重启 dsh web`,
+    afterCommit: commit,
+    afterVersion,
+    changed: true,
+    restartRequired: true,
+    finishedAt: new Date().toISOString(),
+  })
+}
+
 export async function runWorker(specPath, dependencies = {}) {
   const spec = JSON.parse(readFileSync(specPath, 'utf8'))
   const runner = dependencies.runCommand ?? runCommand
@@ -633,6 +730,10 @@ export async function runWorker(specPath, dependencies = {}) {
     }
     if (spec.action === 'dsh') {
       await runDshJob(spec, base, runner)
+      return
+    }
+    if (spec.action === 'rollback-dsh') {
+      await runDshRollbackJob(spec, base, runner)
       return
     }
     if (spec.action === 'batch') {
