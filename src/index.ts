@@ -139,11 +139,15 @@ export function apply(ctx: AppContext, config: Config): void {
   const STATUS_TTL_MS = 5_000
   let statusCache: { at: number; repo: Record<string, unknown>; plugins: Array<Record<string, unknown>> } | null = null
 
-  function writeJsonAtomic(file: string, value: unknown): void {
+  function writeTextAtomic(file: string, text: string): void {
     mkdirSync(dirname(file), { recursive: true })
     const temporary = `${file}.${process.pid}.tmp`
-    writeFileSync(temporary, JSON.stringify(value, null, 2) + '\n', 'utf8')
+    writeFileSync(temporary, text, 'utf8')
     renameSync(temporary, file)
+  }
+
+  function writeJsonAtomic(file: string, value: unknown): void {
+    writeTextAtomic(file, JSON.stringify(value, null, 2) + '\n')
   }
 
   function readJob(file: string): Record<string, unknown> | null {
@@ -703,10 +707,28 @@ export function apply(ctx: AppContext, config: Config): void {
   }
 
   /**
+   * npm 包 repository 归属核验：'match' | 'mismatch' | 'unknown'。
+   * unknown（网络失败 / 无 repository 字段 / 解析失败）不作为拒绝依据——
+   * 只有"查到了且明确不一致"才算 mismatch。
+   */
+  async function npmOwnership(npmName: string, ownerRepo: string, networkEnv?: Record<string, string>): Promise<'match' | 'mismatch' | 'unknown'> {
+    const r = await execAsync('npm', ['view', npmName, 'repository', '--json'], profileDir, 30_000, networkEnv)
+    if (!r.ok) return 'unknown'
+    try {
+      const repository = JSON.parse(r.out.trim())
+      const repoUrl = String(typeof repository === 'string' ? repository : (repository?.url ?? ''))
+      const mapped = extractOwnerRepo(repoUrl)
+      if (!mapped) return 'unknown'
+      return mapped.toLowerCase() === ownerRepo.toLowerCase() ? 'match' : 'mismatch'
+    } catch {
+      return 'unknown'
+    }
+  }
+
+  /**
    * 解析安装来源（防抢注，参照 dsh-market）：
    * 优先 npm 包（秒级安装），但要求 npm 包的 repository 与清单的 GitHub
-   * owner/repo 完全一致（复用 npm-mapping 的锚定正则 extractOwnerRepo，
-   * 全等比较，杜绝 evil/…/owner/repo 这类前缀拼接或 -evil 后缀绕过）；
+   * owner/repo 完全一致（锚定正则 + 全等比较，杜绝前缀拼接/后缀绕过）；
    * 不一致或查不到时回退 github:owner/repo。
    */
   async function resolveInstallSpec(entry: RegistryEntry): Promise<{ ok: true; spec: string; via: string } | { ok: false; error: string }> {
@@ -717,23 +739,32 @@ export function apply(ctx: AppContext, config: Config): void {
       const networkEnv = proxy
         ? { HTTP_PROXY: proxy, HTTPS_PROXY: proxy, http_proxy: proxy, https_proxy: proxy }
         : undefined
-      const r = await execAsync('npm', ['view', npmName, 'repository', '--json'], profileDir, 30_000, networkEnv)
-      if (r.ok) {
-        try {
-          const repository = JSON.parse(r.out.trim())
-          const repoUrl = String(typeof repository === 'string' ? repository : (repository?.url ?? ''))
-          // 锚定解析 + 全等比较：只有 github.com/owner/repo 本身才放行 npm 安装
-          const mapped = extractOwnerRepo(repoUrl)
-          if (mapped && mapped.toLowerCase() === ownerRepo.toLowerCase()) {
-            return { ok: true, spec: npmName, via: 'npm' }
-          }
-        } catch { /* 解析失败按不匹配处理 */ }
+      const ownership = await npmOwnership(npmName, ownerRepo, networkEnv)
+      if (ownership === 'match') {
+        return { ok: true, spec: npmName, via: 'npm' }
       }
       return { ok: true, spec: `github:${ownerRepo}`, via: 'github' }
     }
     if (npmName) return { ok: true, spec: npmName, via: 'npm' }
     if (ownerRepo) return { ok: true, spec: `github:${ownerRepo}`, via: 'github' }
     return { ok: false, error: '清单条目缺少 npm 包名与 GitHub 来源，无法安装' }
+  }
+
+  /**
+   * 更新前的防抢注核验：安装走 resolveInstallSpec 的 repository 全等校验，
+   * 但 `pnpm update --latest` 只认 npm 名——包易主后更新会静默拉到别人的代码。
+   * 市场清单里能按 npm 名对上且带 owner 的条目，更新前重验归属；
+   * 明确不一致时返回拒绝原因，其余情形（非市场插件 / 网络失败）不拦截。
+   */
+  async function hijackCheckError(packageName: string, networkEnv?: Record<string, string>): Promise<string | null> {
+    const registry = await loadRegistry(false)
+    const entries = Array.isArray(registry.data?.plugins) ? registry.data.plugins as RegistryEntry[] : []
+    const entry = entries.find((p) => typeof p.npm === 'string' && p.npm === packageName)
+    const owner = entry && typeof entry.owner === 'string' ? entry.owner : ''
+    if (!entry || !owner || typeof entry.name !== 'string') return null
+    const ownership = await npmOwnership(packageName, `${owner}/${entry.name}`, networkEnv)
+    if (ownership !== 'mismatch') return null
+    return `npm 包 ${packageName} 的 repository 已不再指向 ${owner}/${entry.name}，与插件市场清单不一致，已拒绝更新以防包被抢注。请到项目页面确认包归属后再手动更新。`
   }
 
   // ── 禁用/启用：走 profile cordis.patch.yml 的 id 定向 disabled 覆盖 ──
@@ -792,7 +823,8 @@ export function apply(ctx: AppContext, config: Config): void {
     try {
       copyFileSync(profilePatchFile, `${profilePatchFile}.bak-update-center`)
     } catch { /* 首次写入时源文件不存在，无需备份 */ }
-    writeFileSync(profilePatchFile, text, 'utf8')
+    // 原子写：中途崩溃不会留下半截的 cordis.patch.yml（那会让 dsh web 起不来）
+    writeTextAtomic(profilePatchFile, text)
   }
 
   function setDisabled(depName: string, disabled: boolean): { ok: boolean; result: string } {
@@ -988,6 +1020,18 @@ export function apply(ctx: AppContext, config: Config): void {
           if (!plugin) {
             return send(200, { ok: false, result: `未找到可卸载的 npm 插件: ${packageName}。link/preset 插件请直接编辑 profile 依赖。` })
           }
+          // 卸载前清理禁用状态：受管区块留下死条目会导致重装同名插件时被静默禁用。
+          // 清理失败不阻断卸载（此时行为退回旧版：残留状态待下次 disable/enable 重写）。
+          const disableState = readDisables()
+          if (packageName in disableState) {
+            try {
+              delete disableState[packageName]
+              writeDisables(disableState)
+              syncDisableBlock()
+            } catch (error) {
+              logger?.warn?.('[%s] 清理 %s 的禁用状态失败：%s', name, packageName, error)
+            }
+          }
           return send(200, await startJob({
             action: 'remove',
             target: packageName,
@@ -1011,6 +1055,12 @@ export function apply(ctx: AppContext, config: Config): void {
           for (const p of checkPlugins) {
             const git = (p.git ?? {}) as Record<string, unknown>
             if (p.kind === 'npm' && p.latest && p.latest !== p.version) {
+              const proxy = await proxyPromise
+              const networkEnv = proxy
+                ? { HTTP_PROXY: proxy, HTTPS_PROXY: proxy, http_proxy: proxy, https_proxy: proxy }
+                : undefined
+              const blocked = await hijackCheckError(String(p.name), networkEnv)
+              if (blocked) return send(200, { ok: false, result: blocked })
               jobs.push({
                 action: 'npm',
                 target: p.name,
@@ -1063,6 +1113,8 @@ export function apply(ctx: AppContext, config: Config): void {
             : undefined
           const expectedVersion = await npmLatest(packageName, networkEnv)
           if (!expectedVersion) return send(200, { ok: false, result: `无法获取 ${packageName} 的最新版本` })
+          const blocked = await hijackCheckError(packageName, networkEnv)
+          if (blocked) return send(200, { ok: false, result: blocked })
           return send(200, await startJob({
             action: 'npm',
             target: packageName,
@@ -1161,7 +1213,7 @@ export function apply(ctx: AppContext, config: Config): void {
           writeJsonAtomic(registryCacheFile, { fetchedAt: Date.now(), data: fetched.data })
         } catch { /* 写盘失败仅影响下次启动的缓存 */ }
         registryCache = { at: Date.now(), source: fetched.source, data: fetched.data }
-        logger?.info?.('[%s] 市场清单已自动刷新（source=%s, count=%s）', name, fetched.source, fetched.data?.count ?? '?')
+        logger?.info?.('[%s] 市场清单已自动刷新（source=%s, count=%s）', name, fetched.source, fetched.data?.plugins?.length ?? '?')
         void enrichRegistryWithGithubTopics()
       })
     }, REGISTRY_REFRESH_INTERVAL_MS)
