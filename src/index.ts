@@ -20,7 +20,7 @@ import type { Context } from 'cordis'
 import { defineTool } from '@deepseek-ai/dsh-tools'
 import z from 'schemastery'
 import { spawn } from 'node:child_process'
-import { copyFileSync, existsSync, mkdirSync, readFileSync, readdirSync, renameSync, writeFileSync } from 'node:fs'
+import { copyFileSync, existsSync, mkdirSync, readFileSync, readdirSync, renameSync, unlinkSync, writeFileSync } from 'node:fs'
 import { randomUUID } from 'node:crypto'
 import { dirname, isAbsolute, join, resolve } from 'node:path'
 import { homedir } from 'node:os'
@@ -189,6 +189,54 @@ export function apply(ctx: AppContext, config: Config): void {
     return readJob(join(jobsDir, `${id}.json`))
   }
 
+  /** 任务历史清理：jobs 目录只保留最近 20 个任务（文件名毫秒时间戳，字典序即
+   *  时间序），状态与 spec 文件一并删除。回退功能依赖最近一次 dsh 任务的
+   *  beforeCommit，20 个历史绰绰有余，又不会无限增长。 */
+  function pruneJobHistory(): void {
+    const JOB_HISTORY_KEEP = 20
+    try {
+      const states = readdirSync(jobsDir)
+        .filter((file) => /^\d{13}-[a-zA-Z0-9-]{8}\.json$/.test(file))
+        .sort()
+      for (const name of states.slice(0, Math.max(0, states.length - JOB_HISTORY_KEEP))) {
+        const id = name.replace(/\.json$/, '')
+        for (const file of [join(jobsDir, name), join(jobsDir, `${id}.spec.json`)]) {
+          try {
+            unlinkSync(file)
+          } catch { /* 已被并发清理 */ }
+        }
+      }
+    } catch { /* jobs 目录不存在则忽略 */ }
+  }
+
+  /** dsh 回退目标：最近一次 dsh 更新/回退任务记录的"更新前提交"。跳过没有
+   *  前进过（before==after）与目标等于当前 HEAD（已回退过）的记录。 */
+  async function findRollbackTarget(): Promise<string | null> {
+    if (!repoDir) return null
+    const head = await execAsync('git', ['rev-parse', 'HEAD'], repoDir, 10_000)
+    const headCommit = head.ok ? head.out.trim() : ''
+    const jobFiles = [latestJobPath]
+    try {
+      jobFiles.push(...readdirSync(jobsDir)
+        .filter((file) => /^\d{13}-[a-zA-Z0-9-]{8}\.json$/.test(file))
+        .sort()
+        .reverse()
+        .map((file) => join(jobsDir, file)))
+    } catch { /* jobs 目录不存在则只用 latest */ }
+    for (const file of jobFiles) {
+      const job = readJob(file)
+      if (!job || (job.action !== 'dsh' && job.action !== 'rollback-dsh')) continue
+      if (job.status !== 'completed') continue
+      const commit = typeof job.beforeCommit === 'string' ? job.beforeCommit : ''
+      if (!/^[0-9a-f]{4,40}$/i.test(commit)) continue
+      const after = typeof job.afterCommit === 'string' ? job.afterCommit : ''
+      if (after && after === commit) continue // 那次任务没有前进（已是最新）
+      if (headCommit && commit === headCommit) continue // 已经回退到了这个提交
+      return commit
+    }
+    return null
+  }
+
   async function startJob(spec: Record<string, unknown>): Promise<Record<string, unknown>> {
     const active = latestJob()
     if (active && (active.status === 'queued' || active.status === 'running')) {
@@ -228,6 +276,7 @@ export function apply(ctx: AppContext, config: Config): void {
       proxy,
       repoDir,
     })
+    pruneJobHistory()
     try {
       // spawn 参数注入防护：worker 两路径均为内部拼接的绝对路径，拒绝任何以 "-" 开头的值；
       // "--" 终止符确保 node 不会把后续参数解释为自己的选项。
@@ -1098,6 +1147,24 @@ export function apply(ctx: AppContext, config: Config): void {
             action: 'dsh',
             target: 'dsh',
             full: body?.full === true,
+            remote,
+            branch,
+          }))
+        }
+        if (path === '/rollback-dsh') {
+          // 回退目标是最近一次 dsh 更新/回退任务记录的"更新前提交"：
+          // reset --hard 回去 + 重新 install/build，防新旧产物混跑。
+          if (!repoDir) {
+            return send(200, { ok: false, result: '未找到 dsh 仓库目录，无法回退。' })
+          }
+          const commit = await findRollbackTarget()
+          if (!commit) {
+            return send(200, { ok: false, result: '没有可回退的记录：需要先完成一次 dsh 更新，且当前已不处于可回退的位置。' })
+          }
+          return send(200, await startJob({
+            action: 'rollback-dsh',
+            target: 'dsh',
+            commit,
             remote,
             branch,
           }))

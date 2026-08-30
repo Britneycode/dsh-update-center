@@ -339,7 +339,7 @@ function buildPanel(): HTMLElement {
     return lines.filter(Boolean).join('\n')
   }
 
-  function pollJob(id: string, activeButton?: HTMLButtonElement): void {
+  function pollJob(id: string, activeButton?: HTMLButtonElement, failures = 0): void {
     activeJobId = id
     fetchJson('/job?id=' + encodeURIComponent(id))
       .then((data) => {
@@ -392,8 +392,16 @@ function buildPanel(): HTMLElement {
       })
       .catch((error) => {
         if (!page.isConnected) return
+        // 连续读取失败（dsh 已死/网络异常）时停止轮询并恢复按钮，任务状态
+        // 在磁盘上不会丢，用户稍后刷新面板即可看到结果。
+        if (failures >= 20) {
+          activeJobId = ''
+          setBusy(false, activeButton)
+          say(`更新进度连续 ${failures} 次读取失败，已停止轮询：${String(error)}\n任务状态保存在磁盘上，稍后刷新面板即可查看结果。`, 'err')
+          return
+        }
         say('暂时无法读取更新进度，dsh 重启后会从磁盘恢复任务状态：' + String(error), 'info')
-        window.setTimeout(() => pollJob(id, activeButton), 1500)
+        window.setTimeout(() => pollJob(id, activeButton, failures + 1), 1500)
       })
   }
 
@@ -469,12 +477,17 @@ function buildPanel(): HTMLElement {
     const actions = el('div', 'uc-actions')
     const fullButton = actionButton('完整更新')
     const pullButton = actionButton('仅拉取代码', 'secondary')
+    const rollbackButton = actionButton('回退上一版', 'secondary')
     const canUpdate = checked && !repo?.error && !git.dirty && Number(git.behind) > 0
     fullButton.disabled = !canUpdate
     pullButton.disabled = !canUpdate
+    // 回退不要求"落后"：更新后发现新版有问题时用。没有可回退记录时服务端
+    // 会返回明确提示。
+    rollbackButton.disabled = !checked || !!repo?.error || !!git.dirty
     bindAction(fullButton, '/update-dsh', { full: true }, '完整更新会在独立后台任务中拉取代码、安装依赖并重新构建 dsh。任务完成后再重启，是否继续？', '正在创建后台更新任务…')
     bindAction(pullButton, '/update-dsh', { full: false }, '仅拉取代码不会安装依赖或重新构建，重启后仍可能运行旧产物。确认继续？', '正在创建后台更新任务…')
-    actions.append(fullButton, pullButton)
+    bindAction(rollbackButton, '/rollback-dsh', {}, '回退会把 dsh 源码重置到上一次更新前的提交，并重新安装依赖、重新构建（需要工作区干净）。完成后需重启 dsh web。被回退的提交仍可用 git reflog 找回。是否继续？', '正在创建后台回退任务…')
+    actions.append(fullButton, pullButton, rollbackButton)
     row.append(info, actions)
     repoContent.append(row)
 

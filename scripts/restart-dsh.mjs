@@ -113,9 +113,26 @@ function main() {
         stdio: ['ignore', outFd, errFd],
         windowsHide: true,
       })
-      child.on('error', () => process.exit(1))
+      // 启动存活观察：spawn 成功不等于 dsh 真起来了——运行时崩溃（缺模块、
+      // 端口被占、补丁失效等）通常发生在头几秒。助手保留 15 秒观察期，期间
+      // 进程退出就把结论写进日志，避免"面板提示已重启、服务其实没起来"的
+      // 静默失败（重启助手之前是拉起即退出，无从得知）。
+      const startedAt = Date.now()
+      let exited = false
+      child.on('error', (error) => {
+        try {
+          appendFileSync(stderrLog, `[restart] 新进程拉起失败：${error}\n`)
+        } catch { /* 日志写失败无处报告 */ }
+        process.exit(1)
+      })
+      child.on('exit', (code, signal) => {
+        exited = true
+        try {
+          appendFileSync(stderrLog, `[restart] 新进程启动 ${Math.round((Date.now() - startedAt) / 1000)}s 后退出（code=${code ?? '-'} signal=${signal ?? '-'}），dsh 未成功重启。请查看本文件与 dsh-web.stdout.log 定位原因；可用 Start-DSH 手动拉起，或回退 dsh 后再试。\n`)
+        } catch { /* 日志写失败无处报告 */ }
+      })
       child.unref()
-      process.exit(0)
+      setTimeout(() => process.exit(exited ? 1 : 0), 15_000)
     }, killWaitMs)
   }, delayMs)
 }

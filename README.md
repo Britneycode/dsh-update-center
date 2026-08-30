@@ -62,6 +62,10 @@ dsh plugin --profile web add link:<本插件目录>
 - 更新由 `$DSH_HOME/update-center` 下的独立 worker 执行，停止或重启 dsh 不会中断任务。
 - npm 插件按包名精准更新，不会因为点击单个插件而更新整个 profile。
 - npm 更新完成后核对 `node_modules` 中的实际版本；版本没有变化时返回失败。
+- npm 更新失败自动回滚到更新前版本（"失败 = 保持原样"）；检查与执行之间上游又发新版时，装上的版本若就是当前 npm latest 则按实际版本放行，不做无谓回滚。
+- dsh 更新后一键「回退上一版」：重置到任务记录的更新前提交并重新 `pnpm install` + `pnpm run build`，回退前校验工作区干净与目标提交存在。
+- 「重启 dsh」助手在拉起新进程后保留 15 秒存活观察期：新进程若提前退出，把退出码与诊断结论写入 `~/.dsh/update-center/dsh-web.stderr.log`，不再静默失败。
+- 更新任务历史只保留最近 20 个（状态与 spec 文件一并清理），不再无限累积。
 - npm 更新/安装/卸载后按官方 `dsh plugin` 的规则对账 `dsh.profile.bundles`；模板 bundle 不受影响。
 - link 与 preset 只能通过已安装清单中的包名更新，API 不接受任意目录。
 - Git 插件只更新了 `src` 而没有更新 `lib/dist` 时，自动执行包的 `build` 脚本。
