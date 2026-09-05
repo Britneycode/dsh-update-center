@@ -12,7 +12,8 @@
  *  - 所有子进程走异步 execAsync（./run-command.mjs：Windows .cmd 经
  *    cmd.exe /c 参数数组执行），检查更新不会阻塞 dsh web 的事件循环；
  *  - /status 有 5 秒快照缓存（?fresh=1 强制刷新），打开面板不再全量跑 git；
- *  - POST 动作校验 Origin 与 Host 同源，防止跨站触发更新；
+ *  - POST 动作校验 Origin 与 Host 同源；疑似浏览器（sec-fetch-* / Mozilla UA）
+ *    缺 Origin 一律拒绝，只放行明确的服务端调用；
  *  - 更新前拒绝脏工作区；更新后不自动结束自身进程，由面板提示用户重启。
  */
 import type { Context } from 'cordis';

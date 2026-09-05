@@ -7,6 +7,42 @@ import test from 'node:test'
 
 const worker = await import('../scripts/update-worker.mjs').catch(() => ({}))
 
+// Windows 下钉住 runCommand 的 .cmd 参数数组契约：cmd.exe 对元字符的二次解析
+// 不受引号保护（探针实测 ^ 会被吞、& 会拆命令），执行器靠显式拒绝元字符参数
+// 兜底——这两个行为都由测试锚定，防止将来改回字符串拼接或丢掉守卫。
+test('runCommand passes .cmd arguments through an argv array intact', { skip: process.platform !== 'win32' }, () => {
+  const dir = mkdtempSync(join(tmpdir(), 'uc-runcmd-argv-'))
+  try {
+    const batch = join(dir, 'echo-args.cmd')
+    // 守卫拒绝含引号的参数，所以这里可以用带引号的 %~1 展开安全处理含空格参数。
+    // 断言限定 ASCII：cmd 批处理回显走 OEM 代码页，非 ASCII 属于输出编码问题，
+    // 不是 argv 契约的一部分（runCommand 固定 encoding: 'utf8'，新旧实现一致）。
+    writeFileSync(batch, '@echo off\r\n:loop\r\nif "%~1"=="" goto done\r\necho [%~1]\r\nshift\r\ngoto loop\r\n:done\r\n')
+    const result = worker.runCommand(batch, ['plain', 'has space', 'pkg@1.0.0', 'github:owner/repo'], dir, 15_000)
+    assert.equal(result.ok, true, result.err)
+    const seen = result.out.split(/\r?\n/).filter(Boolean)
+    assert.deepEqual(seen, ['[plain]', '[has space]', '[pkg@1.0.0]', '[github:owner/repo]'])
+  } finally {
+    rmSync(dir, { recursive: true, force: true })
+  }
+})
+
+test('runCommand refuses .cmd arguments containing cmd metacharacters', { skip: process.platform !== 'win32' }, () => {
+  const dir = mkdtempSync(join(tmpdir(), 'uc-runcmd-guard-'))
+  try {
+    const batch = join(dir, 'echo-args.cmd')
+    writeFileSync(batch, '@echo off\r\necho should-not-run\r\n')
+    for (const unsafe of ['a&b', 'a^b', 'a|b', 'a<b', 'a%PATH%', 'a"b']) {
+      const result = worker.runCommand(batch, ['ok-arg', unsafe], dir, 10_000)
+      assert.equal(result.ok, false, `expected refusal for ${unsafe}`)
+      assert.match(result.err, /cmd 元字符/, `expected guard message for ${unsafe}`)
+    }
+    assert.equal(readFileSync(batch, 'utf8').includes('should-not-run'), true)
+  } finally {
+    rmSync(dir, { recursive: true, force: true })
+  }
+})
+
 async function waitFor(predicate, timeoutMs = 10_000) {
   const deadline = Date.now() + timeoutMs
   while (Date.now() < deadline) {

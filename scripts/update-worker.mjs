@@ -61,9 +61,18 @@ export function runCommand(command, args, cwd, timeoutMs = 600_000, extraEnv) {
   for (const candidate of candidates) {
     const isBatch = isWindows && candidate.endsWith('.cmd')
     const executable = isBatch ? 'cmd.exe' : candidate
-    const commandArgs = isBatch
-      ? ['/d', '/s', '/c', [candidate, ...args].map(quoteCmdArgument).join(' ')]
-      : args
+    // .cmd 经 cmd.exe /d /s /c + 参数数组执行，与 src/run-command.mjs 的
+    // runCommandAsync 保持同一 argv 契约：转义交给 Node 的 argv 引用，不做
+    // 字符串拼接。cmd.exe 对元字符的二次解析不受引号保护（/s 剥掉外层引号
+    // 后逐段解析，^ 会被吞、& 会拆命令），因此 .cmd 路径显式拒绝含元字符的
+    // 参数——宁可任务失败，也不静默错解析。
+    const commandArgs = isBatch ? ['/d', '/s', '/c', candidate, ...args] : args
+    if (isBatch) {
+      const unsafe = commandArgs.map(String).find((arg) => /[&|<>^()%"\r\n\0]/.test(arg))
+      if (unsafe !== undefined) {
+        return { ok: false, code: null, out: '', err: `.cmd 参数包含 cmd 元字符，已拒绝执行: ${unsafe.slice(0, 100)}` }
+      }
+    }
     const result = spawnSync(executable, commandArgs, {
       cwd,
       encoding: 'utf8',
@@ -81,12 +90,6 @@ export function runCommand(command, args, cwd, timeoutMs = 600_000, extraEnv) {
     }
   }
   return { ok: false, code: null, out: '', err: `command not found: ${command}` }
-}
-
-function quoteCmdArgument(value) {
-  const text = String(value)
-  if (/^[A-Za-z0-9_@%+=:,./\\-]+$/.test(text)) return text
-  return `"${text.replaceAll('"', '""')}"`
 }
 
 class JobError extends Error {

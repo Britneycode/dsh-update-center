@@ -81,6 +81,8 @@ const styles = `
 .uc-msg.ok{border-color:#28945a}
 .uc-msg.err{border-color:#d23a3a}
 .uc-msg.info{border-color:#2878d0}
+/* 以下窄屏规则依赖宿主设置面板的内部 class 命名（_panel/_nav* 后缀选择器）：
+   宿主升级改名会静默失效，挂载时 probeMobileSelectors 会在窄屏下探测并告警。 */
 @media(max-width:680px){
   [class$="_panel"]:has(.uc-page)>nav{width:52px!important;flex-basis:52px!important;padding-inline:6px!important}
   [class$="_panel"]:has(.uc-page)>nav [class$="_navTitle"]{display:none!important}
@@ -94,14 +96,30 @@ const styles = `
 }
 `
 
-async function fetchJson(path: string, init?: RequestInit): Promise<any> {
-  const response = await fetch(API + path, {
-    headers: { 'content-type': 'application/json' },
-    ...init,
-  })
-  const data = await response.json().catch(() => ({ ok: false, error: `HTTP ${response.status}` }))
-  if (!response.ok) throw new Error(data?.error || `HTTP ${response.status}`)
-  return data
+const DEFAULT_TIMEOUT_MS = 30_000
+
+/** 带超时的 API 请求：所有请求都有明确上限，弱网下不会永久停在"检查中"。
+ *  长耗时端点（/check、/update-all、/market/refresh）由调用方传更长超时。 */
+async function fetchJson(path: string, init?: RequestInit, timeoutMs = DEFAULT_TIMEOUT_MS): Promise<any> {
+  const controller = new AbortController()
+  const timer = window.setTimeout(() => controller.abort(), timeoutMs)
+  try {
+    const response = await fetch(API + path, {
+      headers: { 'content-type': 'application/json' },
+      ...init,
+      signal: controller.signal,
+    })
+    const data = await response.json().catch(() => ({ ok: false, error: `HTTP ${response.status}` }))
+    if (!response.ok) throw new Error(data?.error || `HTTP ${response.status}`)
+    return data
+  } catch (error) {
+    if (controller.signal.aborted) {
+      throw new Error(`请求超时（${Math.round(timeoutMs / 1000)}s），可稍后重试；POST 动作可能已在后台生效，刷新状态可确认`)
+    }
+    throw error
+  } finally {
+    window.clearTimeout(timer)
+  }
 }
 
 function buildPanel(): HTMLElement {
@@ -197,13 +215,24 @@ function buildPanel(): HTMLElement {
   let marketSort = 'stars'
   let marketVisibleLimit = MARKET_PAGE_SIZE
   let lastStatusData: any = null
+  let searchTimer = 0
 
-  /** 已安装插件里有多少项可更新（用于“全部更新”按钮态）。 */
+  /** 单个插件是否有远端可更新：npm 比版本，link/preset 比 behind。
+   *  dirty / 检查失败等阻断态由调用方按场景叠加。已安装列表、市场卡片与
+   *  更新计数共用这一个判定，避免多处口径漂移。 */
+  function pluginUpdatable(plugin: any): boolean {
+    const git = plugin.git ?? {}
+    if (plugin.kind === 'npm') return Boolean(plugin.latest && plugin.latest !== plugin.version)
+    if (plugin.kind === 'link' || plugin.kind === 'preset') return Number(git.behind) > 0
+    return false
+  }
+
+  /** 已安装插件里有多少项可更新（用于"全部更新"按钮态）：与 /update-all 的
+   *  组任务条件同口径，有未提交改动的 link 插件不可批量更新，不计入。 */
   function pluginUpdateCount(plugins: any[]): number {
     return plugins.filter((plugin) => {
-      const git = plugin.git ?? {}
-      return (plugin.kind === 'npm' && plugin.latest && plugin.latest !== plugin.version)
-        || ((plugin.kind === 'link' || plugin.kind === 'preset') && Number(git.behind) > 0 && !git.dirty)
+      if (plugin.kind === 'link' || plugin.kind === 'preset') return pluginUpdatable(plugin) && !(plugin.git ?? {}).dirty
+      return pluginUpdatable(plugin)
     }).length
   }
 
@@ -268,9 +297,21 @@ function buildPanel(): HTMLElement {
     return plugins.find((entry) => entry.name === name || (entry.npm && entry.npm === name)) ?? null
   }
 
+  /** 仅放行 http/https 外链。清单是自维护的，这里防的是 javascript: 等协议
+   *  形态的 href 注入；非法 URL 时不设 href，锚点退化为纯文本。 */
+  function safeHref(url: string): string | null {
+    try {
+      const parsed = new URL(url)
+      return parsed.protocol === 'http:' || parsed.protocol === 'https:' ? parsed.href : null
+    } catch {
+      return null
+    }
+  }
+
   function externalLink(text: string, url: string): HTMLAnchorElement {
     const link = el('a', 'uc-meta', text)
-    link.href = url
+    const href = safeHref(url)
+    if (href) link.href = href
     link.target = '_blank'
     link.rel = 'noreferrer'
     return link
@@ -414,12 +455,12 @@ function buildPanel(): HTMLElement {
   }
 
   /** 统一动作绑定：POST 后要么直接返回结果（disable/enable），要么轮询 job。 */
-  function bindAction(button: HTMLButtonElement, path: string, body: Record<string, unknown>, confirmation: string, startingNote: string): void {
+  function bindAction(button: HTMLButtonElement, path: string, body: Record<string, unknown>, confirmation: string, startingNote: string, timeoutMs = DEFAULT_TIMEOUT_MS): void {
     button.addEventListener('click', () => {
       if (!window.confirm(confirmation)) return
       setBusy(true, button, '处理中…')
       say(startingNote, 'info')
-      fetchJson(path, { method: 'POST', body: JSON.stringify(body) })
+      fetchJson(path, { method: 'POST', body: JSON.stringify(body) }, timeoutMs)
         .then((data) => {
           if (!data?.ok) throw new Error(data?.result || data?.error || '操作失败')
           const id = String(data?.job?.id || '')
@@ -438,6 +479,11 @@ function buildPanel(): HTMLElement {
           say('请求失败：' + String(error), 'err')
         })
     })
+  }
+
+  /** 卸载动作绑定：已安装列表与市场卡片共用同一确认文案与服务端语义。 */
+  function bindUninstall(button: HTMLButtonElement, name: string): void {
+    bindAction(button, '/uninstall', { name }, `从 profile 卸载 ${name}（pnpm remove + 移出 bundles）。已禁用状态会一并清理。任务完成后再重启，是否继续？`, '正在创建后台卸载任务…')
   }
 
   function renderRepo(repo: any): void {
@@ -498,10 +544,11 @@ function buildPanel(): HTMLElement {
   }
 
   function renderPlugins(plugins: any[]): void {
-    pluginList.textContent = ''
     pluginCount.textContent = `${plugins.length} 个`
+    const fragment = document.createDocumentFragment()
     if (!plugins.length) {
-      pluginList.append(el('li', 'uc-empty', '当前 profile 没有外部插件，去“插件市场”看看？'))
+      fragment.append(el('li', 'uc-empty', '当前 profile 没有外部插件，去“插件市场”看看？'))
+      pluginList.replaceChildren(fragment)
       return
     }
 
@@ -527,7 +574,6 @@ function buildPanel(): HTMLElement {
       const status = el('div', 'uc-status')
       status.append(el('span', 'uc-meta', plugin.version ? `v${plugin.version}` : '版本未知'))
       const git = plugin.git ?? {}
-      let updateAvailable = false
       let blocked = false
       if (plugin.disabled) {
         status.append(badge('已禁用', 'muted'))
@@ -537,12 +583,10 @@ function buildPanel(): HTMLElement {
         blocked = true
       } else if ((kind === 'link' || kind === 'preset') && checked && git.fetchOk === false) {
         status.append(badge('检查失败', 'err'))
-      } else if ((kind === 'link' || kind === 'preset') && checked && Number(git.behind) > 0) {
-        status.append(badge(`落后 ${git.behind}`, 'update'))
-        updateAvailable = true
-      } else if (kind === 'npm' && checked && plugin.latest && plugin.latest !== plugin.version) {
+      } else if (checked && kind === 'npm' && pluginUpdatable(plugin)) {
         status.append(badge(`可更新至 ${plugin.latest}`, 'update'))
-        updateAvailable = true
+      } else if (checked && (kind === 'link' || kind === 'preset') && pluginUpdatable(plugin)) {
+        status.append(badge(`落后 ${git.behind}`, 'update'))
       } else if (checked && ((kind === 'npm' && plugin.latest) || typeof git.behind === 'number')) {
         status.append(badge('已是最新', 'ok'))
       } else if (!plugin.disabled) {
@@ -551,7 +595,7 @@ function buildPanel(): HTMLElement {
 
       const actions = el('div', 'uc-actions')
       const updateButton = actionButton('更新')
-      updateButton.disabled = !updateAvailable || blocked
+      updateButton.disabled = !checked || blocked || !pluginUpdatable(plugin)
       if (kind === 'npm') {
         bindAction(updateButton, '/update-npm', { name: plugin.name }, `后台更新 ${plugin.name} 到最新版，并核对实际安装版本。任务完成后再重启，是否继续？`, '正在创建后台更新任务…')
       } else {
@@ -565,12 +609,13 @@ function buildPanel(): HTMLElement {
           '正在更新配置…')
         actions.append(toggleButton)
         const removeButton = actionButton('卸载', 'danger')
-        bindAction(removeButton, '/uninstall', { name: plugin.name }, `从 profile 卸载 ${plugin.name}（pnpm remove + 移出 bundles）。已禁用状态会一并清理。任务完成后再重启，是否继续？`, '正在创建后台卸载任务…')
+        bindUninstall(removeButton, String(plugin.name))
         actions.append(removeButton)
       }
       item.append(identity, status, actions)
-      pluginList.append(item)
+      fragment.append(item)
     }
+    pluginList.replaceChildren(fragment)
   }
 
   // ── 市场渲染 ──
@@ -591,9 +636,10 @@ function buildPanel(): HTMLElement {
   }
 
   function renderMarket(): void {
-    marketList.textContent = ''
+    const fragment = document.createDocumentFragment()
     if (!marketData) {
-      marketList.append(el('li', 'uc-empty', '清单尚未加载'))
+      fragment.append(el('li', 'uc-empty', '清单尚未加载'))
+      marketList.replaceChildren(fragment)
       return
     }
     const plugins: any[] = Array.isArray(marketData.plugins) ? marketData.plugins : []
@@ -616,7 +662,8 @@ function buildPanel(): HTMLElement {
     const visibleCount = Math.min(filtered.length, marketVisibleLimit)
     marketMeta.textContent = `来源：${sourceLabel} · 扫描于 ${String(marketData.updated || '未知')} · 共 ${plugins.length} 个，筛选出 ${filtered.length} 个 · 已显示 ${visibleCount} 个`
     if (!filtered.length) {
-      marketList.append(el('li', 'uc-empty', '没有匹配的插件'))
+      fragment.append(el('li', 'uc-empty', '没有匹配的插件'))
+      marketList.replaceChildren(fragment)
       return
     }
     for (const entry of filtered.slice(0, marketVisibleLimit)) {
@@ -656,22 +703,25 @@ function buildPanel(): HTMLElement {
       status.append(el('span', 'uc-meta', stars > 0 ? `★ ${stars}` : '暂无星标'))
       const statusPlugin = (lastStatusData?.plugins ?? []).find((plugin: any) =>
         plugin.name === entry.npm || plugin.name === entry.name)
-      const updatable = statusPlugin
-        && ((statusPlugin.kind === 'npm' && statusPlugin.latest && statusPlugin.latest !== statusPlugin.version)
-          || Number(statusPlugin.git?.behind) > 0)
+      const updatable = statusPlugin && pluginUpdatable(statusPlugin)
 
       const actions = el('div', 'uc-actions')
       if (entry.installMode === 'manual') {
         status.append(badge('手动安装', 'muted'))
-        const guideLink = el('a', 'uc-btn', '安装说明')
-        guideLink.href = String(entry.url)
-        guideLink.target = '_blank'
-        guideLink.rel = 'noreferrer'
-        actions.append(guideLink)
+        const guideHref = safeHref(String(entry.url))
+        if (guideHref) {
+          const guideLink = el('a', 'uc-btn', '安装说明')
+          guideLink.href = guideHref
+          guideLink.target = '_blank'
+          guideLink.rel = 'noreferrer'
+          actions.append(guideLink)
+        } else {
+          actions.append(el('span', 'uc-meta', '项目页面链接不可用'))
+        }
       } else if (installed) {
         status.append(updatable ? badge('可更新', 'update') : badge('已安装', 'ok'))
         const removeButton = actionButton('卸载', 'danger')
-        bindAction(removeButton, '/uninstall', { name: entry.npm || entry.name }, `从 profile 卸载 ${entry.npm || entry.name}？任务完成后再重启，是否继续？`, '正在创建后台卸载任务…')
+        bindUninstall(removeButton, String(entry.npm || entry.name))
         actions.append(removeButton)
       } else {
         const installButton = actionButton('安装')
@@ -679,7 +729,7 @@ function buildPanel(): HTMLElement {
         actions.append(installButton)
       }
       item.append(identity, status, actions)
-      marketList.append(item)
+      fragment.append(item)
     }
     if (filtered.length > marketVisibleLimit) {
       const remaining = filtered.length - marketVisibleLimit
@@ -691,8 +741,9 @@ function buildPanel(): HTMLElement {
         renderMarket()
       })
       loadMoreItem.append(loadMoreButton)
-      marketList.append(loadMoreItem)
+      fragment.append(loadMoreItem)
     }
+    marketList.replaceChildren(fragment)
   }
 
   async function loadMarket(force: boolean, silent: boolean): Promise<void> {
@@ -700,7 +751,7 @@ function buildPanel(): HTMLElement {
     if (!silent) say('正在加载插件市场清单…', 'info')
     try {
       // 刷新会触发服务端网络拉取并重写缓存（有副作用），与服务端一致走 POST
-      const data = await fetchJson(force ? '/market/refresh' : '/market', force ? { method: 'POST' } : undefined)
+      const data = await fetchJson(force ? '/market/refresh' : '/market', force ? { method: 'POST' } : undefined, force ? 90_000 : undefined)
       if (!data?.ok) throw new Error(data?.error || '清单加载失败')
       marketData = data
       marketVisibleLimit = MARKET_PAGE_SIZE
@@ -764,8 +815,12 @@ function buildPanel(): HTMLElement {
   marketTab.addEventListener('click', () => switchTab('market'))
   searchInput.addEventListener('input', () => {
     marketQuery = searchInput.value
-    marketVisibleLimit = MARKET_PAGE_SIZE
-    renderMarket()
+    // 逐键输入时每次最多重建 500 个节点，防抖后再渲染
+    window.clearTimeout(searchTimer)
+    searchTimer = window.setTimeout(() => {
+      marketVisibleLimit = MARKET_PAGE_SIZE
+      renderMarket()
+    }, 150)
   })
   categorySelect.addEventListener('change', () => {
     marketCategory = categorySelect.value
@@ -778,7 +833,7 @@ function buildPanel(): HTMLElement {
     renderMarket()
   })
   refreshButton.addEventListener('click', () => void loadMarket(true, false))
-  bindAction(updateAllButton, '/update-all', {}, '将先自动检查远端更新，再把所有可更新的插件（不含 dsh 本体）排成一个后台批量任务串行执行，单个失败不影响其余。检查可能需要十几秒。任务完成后再重启，是否继续？', '正在检查并创建批量更新任务，可能需要十几秒…')
+  bindAction(updateAllButton, '/update-all', {}, '将先自动检查远端更新，再把所有可更新的插件（不含 dsh 本体）排成一个后台批量任务串行执行，单个失败不影响其余。检查可能需要十几秒。任务完成后再重启，是否继续？', '正在检查并创建批量更新任务，可能需要十几秒…', 300_000)
 
   /** 重启下发后等待服务恢复：先看到请求失败（旧进程已停），再看到成功（新
    *  进程就绪），然后自动刷新页面。期间保持全部按钮禁用，避免把请求打进
@@ -837,7 +892,8 @@ function buildPanel(): HTMLElement {
   checkButton.addEventListener('click', () => {
     setBusy(true, checkButton, '检查中…')
     say('正在检查 dsh 和插件的远端状态…', 'info')
-    fetchJson('/check', { method: 'POST', body: '{}' })
+    // 服务端 git fetch 上限 120s + 各插件并行检查，给 240s 明确上限而非无限等待
+    fetchJson('/check', { method: 'POST', body: '{}' }, 240_000)
       .then((data) => {
         if (!data?.ok) throw new Error(data?.error || '检查失败')
         checked = true
@@ -860,6 +916,20 @@ function buildPanel(): HTMLElement {
   return page
 }
 
+/** 窄屏侧边栏折叠规则押在宿主内部 class 命名上，宿主改名只会静默退化。
+ *  挂载后探测一次：命中不了宿主 nav 就在控制台提示，让退化至少可被发现。 */
+function probeMobileSelectors(): void {
+  if (!window.matchMedia('(max-width: 680px)').matches) return
+  try {
+    const nav = document.querySelector('[class$="_panel"]:has(.uc-page) > nav')
+    if (!nav) {
+      console.warn('[dsh-update-center] 窄屏侧边栏折叠规则未命中宿主 DOM（_panel/_nav* class 命名可能已变更），移动端布局可能退化')
+    }
+  } catch {
+    // 选择器引擎不支持 :has 时跳过探测
+  }
+}
+
 function UpdateCenterPanel(): ReactNode {
   const hostRef = useRef<HTMLDivElement | null>(null)
   useEffect(() => {
@@ -867,6 +937,7 @@ function UpdateCenterPanel(): ReactNode {
     if (!host) return
     const panel = buildPanel()
     host.appendChild(panel)
+    probeMobileSelectors()
     return () => { panel.remove() }
   }, [])
   return createElement('div', { ref: hostRef })
