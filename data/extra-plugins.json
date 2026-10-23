@@ -148,5 +148,20 @@
   "temp_clone_token": null,
   "network_count": 1,
   "subscribers_count": 0
+ },
+ {
+  "id": 3,
+  "name": "dsh-mcp-tools",
+  "full_name": "hxlog/dsh-mcp-tools",
+  "private": false,
+  "owner": {
+   "login": "hxlog"
+  },
+  "html_url": "https://github.com/hxlog/dsh-mcp-tools",
+  "description": "MCP manager for DeepSeek Harness: connect streamable-HTTP or stdio MCP endpoints in Settings, set request headers, probe connectivity, and toggle each MCP tool so disabled tools never reach the model.",
+  "descriptionZh": "DeepSeek Harness 的 MCP 工具管理器：在设置页接入 HTTP/stdio MCP 端点、配置请求头、探测连通性、逐工具开关（停用的工具不会出现在模型工具列表里）。",
+  "fork": false,
+  "stargazers_count": 3,
+  "pushed_at": "2026-10-23T15:33:11Z"
  }
 ]
