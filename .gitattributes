@@ -2,3 +2,6 @@
 # 构建产物（lib/）统一 LF：消除 CRLF/LF 反复警告与行尾噪音 diff。
 # *.map 已移出版本库（sourcemap 每次重建内容非确定，见 .gitignore）。
 lib/** text eol=lf
+# lockfile 由 pnpm 生成为 LF；Windows 上 core.autocrlf=true 会把它转成 CRLF
+# 再转回来，表现为每次 install 后出现「已修改但 diff 为空」的噪音。
+pnpm-lock.yaml text eol=lf
