@@ -19,7 +19,7 @@
 
 import type { Context } from 'cordis'
 import { defineTool } from '@deepseek-ai/dsh-tools'
-import z from 'schemastery'
+import { createRequire } from 'node:module'
 import { spawn } from 'node:child_process'
 import { copyFileSync, existsSync, mkdirSync, readFileSync, readdirSync, renameSync, unlinkSync, writeFileSync } from 'node:fs'
 import { randomUUID } from 'node:crypto'
@@ -45,12 +45,53 @@ export interface Config {
   upstreams: Record<string, string>
 }
 
-export const Config = z.object({
-  profileDir: z.string().default(''),
-  presetDir: z.string().default(''),
-  proxy: z.string().default(''),
-  upstreams: z.dict(z.string()).default({}),
-}) as unknown as Config
+/**
+ * 配置 schema。
+ *
+ * 宿主 loader 在建插件入口时就会读这个导出，而 `schemastery` 曾经只在
+ * peerDependencies 里——profile 的 `autoInstallPeers: false` 让 peer 永不落盘，
+ * 于是整个插件在 import 阶段就 ERR_MODULE_NOT_FOUND 挂掉（issue #2）。
+ *
+ * 修法两层：
+ *  1. `schemastery` 移入 dependencies，保证随包安装、能被解析；
+ *  2. 这里改用 createRequire 同步加载，失败时退回只有默认值的普通对象。
+ *     用顶层 `import z from 'schemastery'` 是没法兜的——静态 import 在模块
+ *     求值前就解析，解析失败会直接让整个插件加载失败，try/catch 抓不到。
+ */
+type SchemasteryModule = {
+  object: (shape: Record<string, unknown>) => unknown
+  string: () => { default: (value: string) => unknown }
+  dict: (value: unknown) => { default: (value: Record<string, string>) => unknown }
+}
+
+const DEFAULT_CONFIG: Config = { profileDir: '', presetDir: '', proxy: '', upstreams: {} }
+
+function loadSchemastery(): SchemasteryModule | null {
+  try {
+    const require = createRequire(import.meta.url)
+    const loaded = require('schemastery')
+    return (loaded?.default ?? loaded) as SchemasteryModule
+  } catch {
+    return null
+  }
+}
+
+function buildConfigSchema(): unknown {
+  const z = loadSchemastery()
+  if (z === null) return DEFAULT_CONFIG
+  try {
+    return z.object({
+      profileDir: z.string().default(''),
+      presetDir: z.string().default(''),
+      proxy: z.string().default(''),
+      upstreams: z.dict(z.string()).default({}),
+    })
+  } catch {
+    return DEFAULT_CONFIG
+  }
+}
+
+export const Config = buildConfigSchema() as Config
 
 type AppContext = Context & {
   webServer: any

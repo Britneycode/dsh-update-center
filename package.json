@@ -1,6 +1,6 @@
 {
   "name": "dsh-update-center",
-  "version": "0.10.0",
+  "version": "0.10.1",
   "description": "dsh (DeepSeek Harness) 更新中心与插件市场：自托管 plugins.json 注册表（GitHub dsh-plugin 主题自动聚合 + npm 包名映射秒级安装），一键安装/更新/卸载/禁用插件与更新 dsh 本体。Update center & plugin marketplace for DeepSeek Harness.",
   "type": "module",
   "main": "./lib/index.js",
@@ -30,13 +30,6 @@
     "url": "https://github.com/Britneycode/dsh-update-center/issues"
   },
   "homepage": "https://github.com/Britneycode/dsh-update-center#readme",
-  "peerDependencies": {
-    "@deepseek-ai/dsh-client-ui-slots": ">=0.0.1-rc <2",
-    "@deepseek-ai/dsh-llm": ">=0.0.1-rc <2",
-    "@deepseek-ai/dsh-tools": ">=0.0.1-rc <2",
-    "cordis": ">=4.0.0-rc <5",
-    "schemastery": "^3.18.0"
-  },
   "devDependencies": {
     "@types/node": "^24.13.3",
     "@types/react": "^18.3.31",
@@ -83,5 +76,14 @@
       ],
       "platform": "web"
     }
+  },
+  "dependencies": {
+    "schemastery": "^3.18.0"
+  },
+  "peerDependencies": {
+    "@deepseek-ai/dsh-client-ui-slots": ">=0.0.1-rc <2",
+    "@deepseek-ai/dsh-llm": ">=0.0.1-rc <2",
+    "@deepseek-ai/dsh-tools": ">=0.0.1-rc <2",
+    "cordis": ">=4.0.0-rc <5"
   }
 }
