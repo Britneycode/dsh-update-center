@@ -77,6 +77,22 @@ dsh plugin --profile web add link:<本插件目录>
 - POST 动作仅接受同源请求（Origin 与 Host 一致）。
 - `Start-DSH.ps1` 会等待后台更新完成再启动，`Stop-DSH.ps1` 不会结束更新 worker。
 
+## 桌面端适配
+
+面板与桌面端设置界面同一套设计系统，不是自绘 DOM：
+
+| 方面 | 做法 |
+|---|---|
+| 控件 | 来自宿主基线模块 `@deepseek-ai/dsh-client-ui-primitives`（`Button` / `SegmentedTabs` / `RiskConfirmation` / `Toast`），声明为 `dsh.client.external`，不打包 |
+| 颜色 | 只走 `--dsw-*` 语义令牌，跟随亮/暗主题（bundle 内硬编码颜色数为 0） |
+| 不可逆操作 | 卸载、重启、dsh 本体更新/回退、批量更新、安装 —— 全部走 `RiskConfirmation` 模态 + 勾选确认，不用 `window.confirm` |
+| 排版 | 页标题 16/24、行标题 14/20、行说明 12/18 |
+| 窄屏 | 纯 CSS 媒体查询，不再用 `!important` 硬改宿主内部 class 名 |
+
+`dsh.client.platform` 必须是 `"web"` ——桌面端跑的就是 `dsh-web-app` 那套 web 前端，写成 `"desktop"` 会被 `@deepseek-ai/dsh-client-modules` 判为非客户端包，面板永不出现。
+
+**导航项图标拿不到**：宿主 `settings-general` 的 `navIcon()` 只给 `account` / `models` / `agent-presets` / `plugins` / `archived-sessions` 配了图标，其余 id 一律回落成齿轮。本插件用 `update-center`（语义正确，且不与宿主已有的 `plugins` 页冲突），因此显示为齿轮。要换专属图标需要宿主侧扩展那张映射表。
+
 ## 构建
 
 构建脚本支持 Windows、macOS 和 Linux。它会从 `DSH_CHECKOUT`、相邻目录及常见用户目录中寻找 DeepSeek Harness checkout，并复用 checkout 的 TypeScript 与 tsdown。
@@ -92,6 +108,23 @@ npm run build
 ```powershell
 $env:DSH_CHECKOUT = 'D:\App\dsh\deepseek-harness'
 npm run build
+```
+
+### 没有 checkout 时只构建浏览器半边
+
+宿主半边（`lib/index.js` 等）是纯 Node 代码，已随仓库分发，日常改面板不需要重建它。浏览器半边可以直接用本仓库的 tsdown，绕过需要 checkout 的 `scripts/build.mjs`：
+
+```bash
+npm run build:client:local   # tsdown，只产出 lib/client.js
+npm run typecheck:client     # tsc -p tsconfig.client.json
+npm run test:client          # lib/client.js 的契约测试（6 条）
+```
+
+`test:client` 里有一条用例会读运行中桌面端的 `app.asar`，取出 shell 真实的 `PLATFORM_MODULES` 表逐条核对 bundle 的 require 目标。不指路会 skip：
+
+```powershell
+$env:DSH_DESKTOP_ROOT = 'D:\App\deepseek harness'
+npm run test:client
 ```
 
 ## 配置
