@@ -340,55 +340,6 @@ test('detached worker completes after its launcher process exits', async () => {
   }
 })
 
-test('updates a dsh checkout through the configured remote branch', async () => {
-  const dir = mkdtempSync(join(tmpdir(), 'dsh-update-checkout-'))
-  const seed = join(dir, 'seed')
-  const remote = join(dir, 'remote.git')
-  const checkout = join(dir, 'checkout')
-  mkdirSync(seed, { recursive: true })
-  writeFileSync(join(seed, 'package.json'), JSON.stringify({ name: '@deepseek-ai/dsh-root', version: '1.0.0' }))
-  const git = (cwd, ...args) => execFileSync('git', args, { cwd, stdio: 'ignore' })
-  git(dir, 'init', '--bare', remote)
-  git(seed, 'init', '-b', 'master')
-  git(seed, 'config', 'user.email', 'test@example.com')
-  git(seed, 'config', 'user.name', 'Test')
-  git(seed, 'add', '.')
-  git(seed, 'commit', '-m', 'initial')
-  git(seed, 'remote', 'add', 'origin', remote)
-  git(seed, 'push', '-u', 'origin', 'master')
-  git(dir, 'clone', '-b', 'master', remote, checkout)
-  writeFileSync(join(seed, 'package.json'), JSON.stringify({ name: '@deepseek-ai/dsh-root', version: '1.1.0' }))
-  git(seed, 'add', 'package.json')
-  git(seed, 'commit', '-m', 'release')
-  git(seed, 'push')
-
-  const specPath = join(dir, 'spec.json')
-  const statePath = join(dir, 'job.json')
-  const latestPath = join(dir, 'latest.json')
-  writeFileSync(specPath, JSON.stringify({
-    id: 'job-dsh-pull',
-    action: 'dsh',
-    target: 'dsh',
-    repoDir: checkout,
-    remote: 'origin',
-    branch: 'master',
-    full: false,
-    statePath,
-    latestPath,
-  }))
-  try {
-    await worker.runWorker(specPath)
-    const state = JSON.parse(readFileSync(statePath, 'utf8'))
-    const packageJson = JSON.parse(readFileSync(join(checkout, 'package.json'), 'utf8'))
-    assert.equal(state.status, 'completed')
-    assert.equal(state.changed, true)
-    assert.equal(state.restartRequired, true)
-    assert.equal(packageJson.version, '1.1.0')
-  } finally {
-    rmSync(dir, { recursive: true, force: true })
-  }
-})
-
 test('reconcileBundles adds a dependency that now declares a bundle', () => {
   const manifest = {
     dependencies: { foo: '^1.0.0' },
@@ -775,52 +726,6 @@ test('finds only untracked artifact-only ghost dirs as stale residuals', () => {
   }
 })
 
-test('dsh job cleans stale residual dirs after pull and before build', async () => {
-  const dir = mkdtempSync(join(tmpdir(), 'uc-dsh-stale-'))
-  const repoDir = join(dir, 'repo')
-  mkdirSync(join(repoDir, 'packages', 'host', 'apiproxy', 'lib'), { recursive: true })
-  mkdirSync(join(repoDir, 'apps', 'cli'), { recursive: true })
-  writeFileSync(join(repoDir, 'apps', 'cli', 'package.json'), '{}')
-  const specPath = join(dir, 'spec.json')
-  const statePath = join(dir, 'job.json')
-  const latestPath = join(dir, 'latest.json')
-  let pulls = 0
-  writeFileSync(specPath, JSON.stringify({
-    id: 'job-dsh-stale',
-    action: 'dsh',
-    target: 'dsh',
-    full: true,
-    remote: 'origin',
-    branch: 'master',
-    repoDir,
-    statePath,
-    latestPath,
-  }))
-  const runCommand = (command, args, cwd) => {
-    if (command === 'git') {
-      if (args[0] === 'status') return { ok: true, code: 0, out: '', err: '' }
-      if (args[0] === 'rev-parse' && args[1] === '--abbrev-ref') return { ok: true, code: 0, out: 'master', err: '' }
-      if (args[0] === 'rev-parse') return { ok: true, code: 0, out: pulls ? 'bbbbbbbbbbbb' : 'aaaaaaaaaaaa', err: '' }
-      if (args[0] === 'pull') { pulls += 1; return { ok: true, code: 0, out: '', err: '' } }
-      if (args[0] === 'ls-files') {
-        const rel = args[2]
-        if (rel === 'packages/host/apiproxy') return { ok: true, code: 0, out: '', err: '' }
-        return { ok: false, code: null, out: '', err: 'unexpected' }
-      }
-    }
-    return { ok: true, code: 0, out: '', err: '' }
-  }
-  try {
-    await worker.runWorker(specPath, { runCommand })
-    const state = JSON.parse(readFileSync(statePath, 'utf8'))
-    assert.equal(state.status, 'completed')
-    assert.ok(state.steps.some((step) => step.includes('packages/host/apiproxy')))
-    assert.equal(existsSync(join(repoDir, 'packages', 'host', 'apiproxy')), false)
-  } finally {
-    rmSync(dir, { recursive: true, force: true })
-  }
-})
-
 function npmFixture(dir) {
   const profileDir = join(dir, 'profile')
   const packageDir = join(profileDir, 'node_modules', '@scope', 'plugin')
@@ -903,49 +808,6 @@ test('accepts an npm update that raced past the expected version when it equals 
     assert.equal(state.status, 'completed')
     assert.equal(state.afterVersion, '0.2.9')
     assert.ok(state.steps.some((step) => step.includes('按实际安装版本通过校验')))
-  } finally {
-    rmSync(dir, { recursive: true, force: true })
-  }
-})
-
-test('rollback-dsh job resets to the recorded pre-update commit and rebuilds', async () => {
-  const dir = mkdtempSync(join(tmpdir(), 'uc-rollback-dsh-'))
-  const repoDir = join(dir, 'repo')
-  mkdirSync(repoDir, { recursive: true })
-  const specPath = join(dir, 'spec.json')
-  const statePath = join(dir, 'job.json')
-  const latestPath = join(dir, 'latest.json')
-  const targetCommit = 'aaaaaaaaaaaa'
-  writeFileSync(specPath, JSON.stringify({
-    id: 'job-rollback-dsh',
-    action: 'rollback-dsh',
-    target: 'dsh',
-    commit: targetCommit,
-    remote: 'origin',
-    branch: 'master',
-    repoDir,
-    statePath,
-    latestPath,
-  }))
-  const runCommand = (command, args) => {
-    if (command === 'git') {
-      if (args[0] === 'status') return { ok: true, code: 0, out: '', err: '' }
-      if (args[0] === 'rev-parse' && args[1] === '--abbrev-ref') return { ok: true, code: 0, out: 'master', err: '' }
-      if (args[0] === 'rev-parse') return { ok: true, code: 0, out: 'cccccccccccc', err: '' }
-      if (args[0] === 'cat-file') return { ok: true, code: 0, out: '', err: '' }
-      if (args[0] === 'reset') return { ok: true, code: 0, out: '', err: '' }
-      if (args[0] === 'ls-files') return { ok: false, code: null, out: '', err: 'skip' }
-    }
-    return { ok: true, code: 0, out: '', err: '' }
-  }
-  try {
-    await worker.runWorker(specPath, { runCommand })
-    const state = JSON.parse(readFileSync(statePath, 'utf8'))
-    assert.equal(state.status, 'completed')
-    assert.equal(state.afterCommit, targetCommit)
-    assert.equal(state.restartRequired, true)
-    assert.ok(state.steps.some((step) => step.includes('已回退：cccccccccc → aaaaaaaaaa')))
-    assert.ok(state.steps.some((step) => step.includes('pnpm run build 完成')))
   } finally {
     rmSync(dir, { recursive: true, force: true })
   }

@@ -273,7 +273,8 @@ test('面板挂载后渲染出宿主控件，且不可逆操作走 RiskConfirmat
 
     const json = JSON.stringify(renderer.toJSON())
     assert.ok(json.includes('更新中心'), '面板应显示标题')
-    assert.ok(json.includes('dsh 本体'), '面板应显示 dsh 本体区块')
+    assert.equal(json.includes('dsh 本体'), false, '面板不再显示 dsh 本体区块（该能力已移除）')
+    assert.ok(json.includes('全部更新') && json.includes('重启 dsh'), '工具栏应保留插件更新与重启')
     assert.ok(json.includes('已安装插件'), '面板应显示已安装插件区块')
     assert.ok(primitives.seen.buttons.length > 0, '面板应使用宿主 Button')
     assert.ok(

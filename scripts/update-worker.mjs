@@ -588,124 +588,6 @@ export function findStaleResidualDirs(repoDir, runner) {
   return stale
 }
 
-function cleanupStaleResidualDirs(repoDir, state, runner) {
-  let staleDirs
-  try {
-    staleDirs = findStaleResidualDirs(repoDir, runner)
-  } catch (error) {
-    state.steps.push(`残留目录扫描失败（不影响本次更新）：${error instanceof Error ? error.message : String(error)}`)
-    return
-  }
-  for (const dir of staleDirs) {
-    try {
-      rmSync(dir, { recursive: true, force: true })
-      state.steps.push(`已清理上游删包残留目录：${relative(repoDir, dir).replaceAll('\\', '/')}`)
-    } catch { /* 删除失败不阻断更新；build 会以原始错误暴露问题 */ }
-  }
-}
-
-async function runDshJob(spec, state, runner) {
-  const dir = spec.repoDir
-  const networkEnv = spec.proxy
-    ? { HTTP_PROXY: spec.proxy, HTTPS_PROXY: spec.proxy, http_proxy: spec.proxy, https_proxy: spec.proxy }
-    : undefined
-  const status = requireCommand(runner('git', ['status', '--porcelain'], dir, 10_000), 'preflight', '读取 dsh Git 状态')
-  if (status) throw new JobError('preflight', `dsh 存在未提交改动，为避免覆盖本地工作，已停止更新：\n${status}`)
-  const currentBranch = requireCommand(runner('git', ['rev-parse', '--abbrev-ref', 'HEAD'], dir, 10_000), 'preflight', '读取 dsh 分支')
-  if (currentBranch !== spec.branch) {
-    throw new JobError('preflight', `当前分支为 ${currentBranch}，配置更新分支为 ${spec.branch}`)
-  }
-  const before = requireCommand(runner('git', ['rev-parse', 'HEAD'], dir, 10_000), 'preflight', '读取 dsh 当前提交')
-  const beforeVersion = readPackage(dir)?.version ?? null
-  updateState(spec, state, {
-    stage: 'pull',
-    beforeCommit: before,
-    beforeVersion,
-    message: '正在拉取 dsh 更新',
-  })
-  requireCommand(
-    runner('git', ['pull', '--ff-only', spec.remote, spec.branch], dir, 300_000, networkEnv),
-    'pull',
-    'git pull ',
-  )
-  const after = requireCommand(runner('git', ['rev-parse', 'HEAD'], dir, 10_000), 'verify', '读取 dsh 更新后提交')
-  const changed = before !== after
-  state.steps.push(changed ? `Git 已更新：${before.slice(0, 10)} → ${after.slice(0, 10)}` : 'Git 已是最新')
-
-  // 上游删包残留清理：pull 后、install/build 前执行。失败不阻断更新。
-  cleanupStaleResidualDirs(dir, state, runner)
-
-  if (spec.full) {
-    updateState(spec, state, { stage: 'install', message: '正在安装 dsh 依赖' })
-    requireCommand(runner('pnpm', ['install'], dir, 600_000, networkEnv), 'install', 'pnpm install ')
-    state.steps.push('pnpm install 完成')
-    updateState(spec, state, { stage: 'build', message: '正在重新构建 dsh' })
-    requireCommand(runner('pnpm', ['run', 'build'], dir, 900_000, networkEnv), 'build', 'pnpm run build ')
-    state.steps.push('pnpm run build 完成')
-  }
-
-  const afterVersion = readPackage(dir)?.version ?? null
-  updateState(spec, state, {
-    status: 'completed',
-    stage: 'completed',
-    message: changed || spec.full ? 'dsh 更新完成' : 'dsh 已是最新',
-    afterCommit: after,
-    afterVersion,
-    changed,
-    restartRequired: changed || spec.full,
-    finishedAt: new Date().toISOString(),
-  })
-}
-
-/** dsh 本体回退：reset --hard 到任务记录的"更新前提交"并完整重建。
- *  源码回退了，lib/node_modules 等产物必须跟着重建，否则新旧混跑。 */
-async function runDshRollbackJob(spec, state, runner) {
-  const dir = spec.repoDir
-  const networkEnv = spec.proxy
-    ? { HTTP_PROXY: spec.proxy, HTTPS_PROXY: spec.proxy, http_proxy: spec.proxy, https_proxy: spec.proxy }
-    : undefined
-  const commit = String(spec.commit ?? '')
-  if (!/^[0-9a-f]{4,40}$/i.test(commit)) {
-    throw new JobError('preflight', `回退目标提交号非法: ${commit}`)
-  }
-  const status = requireCommand(runner('git', ['status', '--porcelain'], dir, 10_000), 'preflight', '读取 dsh Git 状态')
-  if (status) throw new JobError('preflight', `dsh 存在未提交改动，为避免覆盖本地工作，已停止回退：\n${status}`)
-  const currentBranch = requireCommand(runner('git', ['rev-parse', '--abbrev-ref', 'HEAD'], dir, 10_000), 'preflight', '读取 dsh 分支')
-  if (spec.branch && currentBranch !== spec.branch) {
-    throw new JobError('preflight', `当前分支为 ${currentBranch}，配置分支为 ${spec.branch}`)
-  }
-  const before = requireCommand(runner('git', ['rev-parse', 'HEAD'], dir, 10_000), 'preflight', '读取 dsh 当前提交')
-  if (before === commit) throw new JobError('preflight', 'dsh 已处于回退目标提交，无需回退')
-  requireCommand(runner('git', ['cat-file', '-e', `${commit}^{commit}`], dir, 10_000), 'preflight', '校验回退目标提交')
-  updateState(spec, state, {
-    stage: 'reset',
-    beforeCommit: before,
-    targetCommit: commit,
-    message: `正在回退 dsh 到 ${commit.slice(0, 10)}`,
-  })
-  requireCommand(runner('git', ['reset', '--hard', commit], dir, 60_000), 'reset', 'git reset ')
-  state.steps.push(`已回退：${before.slice(0, 10)} → ${commit.slice(0, 10)}（被回退的提交仍可用 git reflog 找回）`)
-  // 回退后的源码同样可能有上游删包残留，与正向更新共用清理逻辑
-  cleanupStaleResidualDirs(dir, state, runner)
-  updateState(spec, state, { stage: 'install', message: '正在安装 dsh 依赖' })
-  requireCommand(runner('pnpm', ['install'], dir, 600_000, networkEnv), 'install', 'pnpm install ')
-  state.steps.push('pnpm install 完成')
-  updateState(spec, state, { stage: 'build', message: '正在重新构建 dsh' })
-  requireCommand(runner('pnpm', ['run', 'build'], dir, 900_000, networkEnv), 'build', 'pnpm run build ')
-  state.steps.push('pnpm run build 完成')
-  const afterVersion = readPackage(dir)?.version ?? null
-  updateState(spec, state, {
-    status: 'completed',
-    stage: 'completed',
-    message: `dsh 已回退到 ${commit.slice(0, 10)}，请重启 dsh web`,
-    afterCommit: commit,
-    afterVersion,
-    changed: true,
-    restartRequired: true,
-    finishedAt: new Date().toISOString(),
-  })
-}
-
 export async function runWorker(specPath, dependencies = {}) {
   const spec = JSON.parse(readFileSync(specPath, 'utf8'))
   const runner = dependencies.runCommand ?? runCommand
@@ -729,14 +611,6 @@ export async function runWorker(specPath, dependencies = {}) {
     }
     if (spec.action === 'link') {
       await runLinkJob(spec, base, runner)
-      return
-    }
-    if (spec.action === 'dsh') {
-      await runDshJob(spec, base, runner)
-      return
-    }
-    if (spec.action === 'rollback-dsh') {
-      await runDshRollbackJob(spec, base, runner)
       return
     }
     if (spec.action === 'batch') {

@@ -2,7 +2,7 @@
 
 [![npm version](https://img.shields.io/npm/v/dsh-update-center.svg)](https://www.npmjs.com/package/dsh-update-center)
 
-DeepSeek Harness 的本地更新中心：内置插件市场（浏览/搜索/一键安装/卸载/禁用），统一管理已装插件与 dsh 本体、profile 中的 npm/link 插件以及 agent preset 的更新。
+DeepSeek Harness 的本地更新中心：内置插件市场（浏览/搜索/一键安装/卸载/禁用），统一管理 profile 中 npm/link 插件以及 agent preset 的更新。
 
 ## 安装
 
@@ -52,18 +52,15 @@ dsh plugin --profile web add link:<本插件目录>
 
 - 检查更新后，工具栏出现「全部更新」：把所有可更新插件（npm 版本落后 + link/preset 落后且无未提交改动）排成一个后台批量任务串行执行。
 - 单个子任务失败不中断其余；结束后汇总「N 成功 / M 失败」，全部失败才标记任务失败。
-- dsh 本体更新有独立的构建语义（完整更新/仅拉取），不并入批量。
 
 ## 当前能力
 
 - 手动检查远端状态，不在打开设置页时自动发起网络请求。
 - 检查与状态查询全部异步执行（子进程不再阻塞 dsh web 的事件循环），插件检查并行、`/status` 带 5 秒快照缓存。
-- dsh 完整更新会依次执行快进拉取、`pnpm install` 和 `pnpm run build`。
 - 更新由 `$DSH_HOME/update-center` 下的独立 worker 执行，停止或重启 dsh 不会中断任务。
 - npm 插件按包名精准更新，不会因为点击单个插件而更新整个 profile。
 - npm 更新完成后核对 `node_modules` 中的实际版本；版本没有变化时返回失败。
 - npm 更新失败自动回滚到更新前版本（"失败 = 保持原样"）；检查与执行之间上游又发新版时，装上的版本若就是当前 npm latest 则按实际版本放行，不做无谓回滚。
-- dsh 更新后一键「回退上一版」：重置到任务记录的更新前提交并重新 `pnpm install` + `pnpm run build`，回退前校验工作区干净与目标提交存在。
 - 「重启 dsh」助手在拉起新进程后保留 15 秒存活观察期：新进程若提前退出，把退出码与诊断结论写入 `~/.dsh/update-center/dsh-web.stderr.log`，不再静默失败。
 - 更新任务历史只保留最近 20 个（状态与 spec 文件一并清理），不再无限累积。
 - npm 更新/安装/卸载后按官方 `dsh plugin` 的规则对账 `dsh.profile.bundles`；模板 bundle 不受影响。
@@ -85,7 +82,7 @@ dsh plugin --profile web add link:<本插件目录>
 |---|---|
 | 控件 | 来自宿主基线模块 `@deepseek-ai/dsh-client-ui-primitives`（`Button` / `SegmentedTabs` / `RiskConfirmation` / `Toast`），声明为 `dsh.client.external`，不打包 |
 | 颜色 | 只走 `--dsw-*` 语义令牌，跟随亮/暗主题（bundle 内硬编码颜色数为 0） |
-| 不可逆操作 | 卸载、重启、dsh 本体更新/回退、批量更新、安装 —— 全部走 `RiskConfirmation` 模态 + 勾选确认，不用 `window.confirm` |
+| 不可逆操作 | 卸载、重启、批量更新、安装 —— 全部走 `RiskConfirmation` 模态 + 勾选确认，不用 `window.confirm` |
 | 排版 | 页标题 16/24、行标题 14/20、行说明 12/18 |
 | 窄屏 | 纯 CSS 媒体查询，不再用 `!important` 硬改宿主内部 class 名 |
 

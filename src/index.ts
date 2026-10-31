@@ -35,29 +35,20 @@ export const name = 'dsh-update-center'
 export const inject = ['tools', 'webServer']
 
 export interface Config {
-  /** dsh 仓库目录（缺省自动探测）。 */
-  repoDir: string
   /** profile 目录（缺省 $DSH_HOME/profiles/web）。 */
   profileDir: string
   /** agent-preset 目录（缺省 $DSH_HOME/.agent-presets）。 */
   presetDir: string
   /** 代理地址（npm/pnpm 用；git 复用仓库级 http.proxy）。 */
   proxy: string
-  /** git 远端名。 */
-  remote: string
-  /** git 分支名。 */
-  branch: string
   /** 插件名 → GitHub 上游（owner/repo），用于展示项目来源。 */
   upstreams: Record<string, string>
 }
 
 export const Config = z.object({
-  repoDir: z.string().default(''),
   profileDir: z.string().default(''),
   presetDir: z.string().default(''),
   proxy: z.string().default(''),
-  remote: z.string().default('origin'),
-  branch: z.string().default('master'),
   upstreams: z.dict(z.string()).default({}),
 }) as unknown as Config
 
@@ -99,12 +90,9 @@ export function apply(ctx: AppContext, config: Config): void {
   const logger = ctx.logger
 
   // ── 路径解析（探测优先级：Config → DSH_CHECKOUT/cwd → home 常见路径）──
-  const repoDir = resolveRepoDir(config.repoDir)
   const dshHome = process.env.DSH_HOME || join(homedir(), '.dsh')
   const profileDir = config.profileDir || join(dshHome, 'profiles', 'web')
   const presetDir = config.presetDir || join(dshHome, '.agent-presets')
-  const remote = config.remote || 'origin'
-  const branch = config.branch || 'master'
   // 已知上游映射仅作兜底：优先展示 git remote 的真实来源。
   const upstreams: Record<string, string> = {
     'dsh-bash-terminal': 'MAXeaglet/dsh-bash-terminal',
@@ -113,10 +101,7 @@ export function apply(ctx: AppContext, config: Config): void {
     'router-standard': 'yjh051108/dsh-router-standard',
     ...config.upstreams,
   }
-  // git 仓库级代理优先（用户在仓库 config 配过 http.proxy 时自动复用）
-  const proxyPromise: Promise<string> = config.proxy
-    ? Promise.resolve(config.proxy)
-    : gitProxy(repoDir)
+  const proxyPromise: Promise<string> = Promise.resolve(config.proxy || '')
   const pluginRoot = resolve(dirname(fileURLToPath(import.meta.url)), '..')
   const updateHome = join(dshHome, 'update-center')
   const jobsDir = join(updateHome, 'jobs')
@@ -136,7 +121,7 @@ export function apply(ctx: AppContext, config: Config): void {
   let restartRequestedAt = 0
   // /status 快照缓存：面板打开/任务轮询不再每次全量跑 git 子进程。
   const STATUS_TTL_MS = 5_000
-  let statusCache: { at: number; repo: Record<string, unknown>; plugins: Array<Record<string, unknown>> } | null = null
+  let statusCache: { at: number; plugins: Array<Record<string, unknown>> } | null = null
 
   function writeTextAtomic(file: string, text: string): void {
     mkdirSync(dirname(file), { recursive: true })
@@ -208,33 +193,6 @@ export function apply(ctx: AppContext, config: Config): void {
     } catch { /* jobs 目录不存在则忽略 */ }
   }
 
-  /** dsh 回退目标：最近一次 dsh 更新/回退任务记录的"更新前提交"。跳过没有
-   *  前进过（before==after）与目标等于当前 HEAD（已回退过）的记录。 */
-  async function findRollbackTarget(): Promise<string | null> {
-    if (!repoDir) return null
-    const head = await execAsync('git', ['rev-parse', 'HEAD'], repoDir, 10_000)
-    const headCommit = head.ok ? head.out.trim() : ''
-    const jobFiles = [latestJobPath]
-    try {
-      jobFiles.push(...readdirSync(jobsDir)
-        .filter((file) => /^\d{13}-[a-zA-Z0-9-]{8}\.json$/.test(file))
-        .sort()
-        .reverse()
-        .map((file) => join(jobsDir, file)))
-    } catch { /* jobs 目录不存在则只用 latest */ }
-    for (const file of jobFiles) {
-      const job = readJob(file)
-      if (!job || (job.action !== 'dsh' && job.action !== 'rollback-dsh')) continue
-      if (job.status !== 'completed') continue
-      const commit = typeof job.beforeCommit === 'string' ? job.beforeCommit : ''
-      if (!/^[0-9a-f]{4,40}$/i.test(commit)) continue
-      const after = typeof job.afterCommit === 'string' ? job.afterCommit : ''
-      if (after && after === commit) continue // 那次任务没有前进（已是最新）
-      if (headCommit && commit === headCommit) continue // 已经回退到了这个提交
-      return commit
-    }
-    return null
-  }
 
   // startJob 的 active 检查与 latest.json 写入之间隔着 await（proxy 解析、
   // 文件写入），并发请求可能同时通过检查后各自拉起 worker。单进程内用
@@ -281,7 +239,6 @@ export function apply(ctx: AppContext, config: Config): void {
       statePath,
       latestPath: latestJobPath,
       proxy,
-      repoDir,
     })
     pruneJobHistory()
     try {
@@ -312,62 +269,6 @@ export function apply(ctx: AppContext, config: Config): void {
       return { ok: false, result: failed.error, job: failed }
     }
     return { ok: true, result: '更新任务已启动', job: initial }
-  }
-
-  function resolveRepoDir(configured: string): string {
-    if (configured && existsSync(join(configured, 'package.json'))) return configured
-    if (process.env.DSH_CHECKOUT && existsSync(join(process.env.DSH_CHECKOUT, 'package.json'))) {
-      return process.env.DSH_CHECKOUT
-    }
-    const cwd = process.cwd()
-    if (existsSync(join(cwd, 'package.json'))) {
-      const pkg = readJson(join(cwd, 'package.json'))
-      if (pkg?.name === '@deepseek-ai/dsh-root') return cwd
-    }
-    for (const sub of ['dsh-harness', 'deepseek-harness', 'dsh']) {
-      const dir = join(homedir(), sub)
-      if (existsSync(join(dir, 'package.json'))) return dir
-    }
-    return ''
-  }
-
-  /** git 仓库级代理（用户在仓库 config 配过 http.proxy 时自动复用）。 */
-  async function gitProxy(dir: string): Promise<string> {
-    if (!dir) return ''
-    const r = await execAsync('git', ['config', '--get', 'http.proxy'], dir, 10_000)
-    return r.ok ? r.out.trim() : ''
-  }
-
-  /** git 仓库状态（不 fetch，只读本地 refs；各命令并行）。 */
-  async function repoStatus(): Promise<Record<string, unknown>> {
-    if (!repoDir) return { path: '', version: '', git: null, error: '未找到 dsh 仓库目录' }
-    const pkg = readJson(join(repoDir, 'package.json'))
-    const [head, branchOut, remoteUrl, dirtyOut] = await Promise.all([
-      execAsync('git', ['rev-parse', '--short', 'HEAD'], repoDir, 10_000),
-      execAsync('git', ['rev-parse', '--abbrev-ref', 'HEAD'], repoDir, 10_000),
-      execAsync('git', ['remote', 'get-url', remote], repoDir, 10_000),
-      execAsync('git', ['status', '--porcelain'], repoDir, 10_000),
-    ])
-    const count = (range: string): Promise<number | null> =>
-      execAsync('git', ['rev-list', '--count', range], repoDir, 10_000)
-        .then((r) => (r.ok ? Number(r.out.trim()) : null))
-    const [behind, ahead] = await Promise.all([
-      count(`HEAD..${remote}/${branch}`),
-      count(`${remote}/${branch}..HEAD`),
-    ])
-    return {
-      path: repoDir,
-      version: typeof pkg?.version === 'string' ? pkg.version : '',
-      git: {
-        head: head.ok ? head.out.trim() : null,
-        branch: branchOut.ok ? branchOut.out.trim() : null,
-        remote: remoteUrl.ok ? remoteUrl.out.trim() : null,
-        ahead,
-        behind,
-        dirty: dirtyOut.ok ? dirtyOut.out.trim().length > 0 : null,
-        dirtyFiles: dirtyOut.ok ? dirtyOut.out.trim().split('\n').filter(Boolean).slice(0, 8) : [],
-      },
-    }
   }
 
   /** 插件基础清单：profile dependencies + agent-presets，只读文件、不跑子进程。 */
@@ -908,23 +809,6 @@ export function apply(ctx: AppContext, config: Config): void {
     const networkEnv = proxy
       ? { HTTP_PROXY: proxy, HTTPS_PROXY: proxy, http_proxy: proxy, https_proxy: proxy }
       : undefined
-    const repo = await repoStatus()
-    let fetchOk = true
-    let fetchErr = ''
-    let latestRemote = null
-    if (repoDir) {
-      const f = await execAsync('git', ['fetch', remote, branch], repoDir, 120_000, networkEnv)
-      fetchOk = f.ok
-      fetchErr = f.ok ? '' : f.err.trim().slice(0, 300)
-      if (f.ok) {
-        const [repo2, log] = await Promise.all([
-          repoStatus(),
-          execAsync('git', ['log', '--oneline', '-5', `${remote}/${branch}`], repoDir, 10_000),
-        ])
-        Object.assign(repo, repo2)
-        latestRemote = log.ok ? log.out.trim().split('\n').filter(Boolean) : null
-      }
-    }
     const plugins = await pluginList()
     await Promise.all(plugins.map(async (p) => {
       const linkDir = typeof p.linkDir === 'string' ? p.linkDir : ''
@@ -941,8 +825,6 @@ export function apply(ctx: AppContext, config: Config): void {
         p.latest = await npmLatest(String(p.name), networkEnv)
       }
     }))
-    const repoGit = (repo.git ?? {}) as Record<string, unknown>
-    const repoUpdates = typeof repoGit.behind === 'number' ? repoGit.behind : 0
     // 可更新计数与 /update-all 的组任务条件同口径：有未提交改动的 link 插件
     // 不可批量更新，不计入，避免"发现 N 项可更新"与实际可批量数对不上。
     const pluginUpdates = plugins.filter((plugin) => {
@@ -953,24 +835,23 @@ export function apply(ctx: AppContext, config: Config): void {
       }
       return false
     }).length
-    const failedChecks = (fetchOk ? 0 : 1) + plugins.filter((plugin) => {
+    const failedChecks = plugins.filter((plugin) => {
       const git = (plugin.git ?? {}) as Record<string, unknown>
       return (plugin.kind === 'npm' && plugin.latest === null)
         || ((plugin.kind === 'link' || plugin.kind === 'preset') && git.fetchOk === false)
     }).length
     return {
-      repo: { ...repo, fetchOk, fetchErr },
       plugins,
-      summary: { repoUpdates, pluginUpdates, totalUpdates: (repoUpdates > 0 ? 1 : 0) + pluginUpdates, failedChecks },
+      summary: { pluginUpdates, totalUpdates: pluginUpdates, failedChecks },
       ts: Date.now(),
     }
   }
 
-  /** /status 快照（repo + plugins），带 TTL 缓存。 */
-  async function statusData(fresh: boolean): Promise<{ repo: Record<string, unknown>; plugins: Array<Record<string, unknown>> }> {
+  /** /status 快照（plugins），带 TTL 缓存。 */
+  async function statusData(fresh: boolean): Promise<{ plugins: Array<Record<string, unknown>> }> {
     if (!fresh && statusCache && Date.now() - statusCache.at < STATUS_TTL_MS) return statusCache
-    const [repo, plugins] = await Promise.all([repoStatus(), pluginList()])
-    statusCache = { at: Date.now(), repo, plugins }
+    const plugins = await pluginList()
+    statusCache = { at: Date.now(), plugins }
     return statusCache
   }
 
@@ -1164,34 +1045,6 @@ export function apply(ctx: AppContext, config: Config): void {
             profileDir,
           }))
         }
-        if (path === '/update-dsh') {
-          const body = JSON.parse(await readBody(req))
-          return send(200, await startJob({
-            action: 'dsh',
-            target: 'dsh',
-            full: body?.full === true,
-            remote,
-            branch,
-          }))
-        }
-        if (path === '/rollback-dsh') {
-          // 回退目标是最近一次 dsh 更新/回退任务记录的"更新前提交"：
-          // reset --hard 回去 + 重新 install/build，防新旧产物混跑。
-          if (!repoDir) {
-            return send(200, { ok: false, result: '未找到 dsh 仓库目录，无法回退。' })
-          }
-          const commit = await findRollbackTarget()
-          if (!commit) {
-            return send(200, { ok: false, result: '没有可回退的记录：需要先完成一次 dsh 更新，且当前已不处于可回退的位置。' })
-          }
-          return send(200, await startJob({
-            action: 'rollback-dsh',
-            target: 'dsh',
-            commit,
-            remote,
-            branch,
-          }))
-        }
         if (path === '/update-npm') {
           const body = JSON.parse(await readBody(req))
           const packageName = String(body?.name ?? '').trim()
@@ -1281,15 +1134,15 @@ export function apply(ctx: AppContext, config: Config): void {
   // ── 工具：给 agent 的只读状态查询 ──
   ctx.effect(() => ctx.tools.register(defineTool({
     name: 'update_center_status',
-    description: '更新中心：查看 dsh 版本与更新状态、已安装插件清单（npm/link 分类）。要执行更新请使用 GUI 设置页的更新中心面板。',
+    description: '更新中心：查看已安装插件清单（npm/link 分类）与可更新状态。要执行更新请使用 GUI 设置页的更新中心面板。',
     parameters: {},
     output: {
       schema: { type: 'string' },
       render: (_args: unknown, value: unknown) => [{ type: 'text', text: String(value) }],
     },
     async execute() {
-      const [repo, plugins] = await Promise.all([repoStatus(), pluginList()])
-      return JSON.stringify({ repo, plugins }, null, 2)
+      const plugins = await pluginList()
+      return JSON.stringify({ plugins }, null, 2)
     },
   })), 'dsh-update-center: status tool')
 
@@ -1309,5 +1162,5 @@ export function apply(ctx: AppContext, config: Config): void {
     return () => clearInterval(timer)
   }, 'dsh-update-center: registry auto refresh')
 
-  logger?.info?.('[%s] 更新中心启动（repo=%s profile=%s）', name, repoDir || '(未找到)', profileDir)
+  logger?.info?.('[%s] 更新中心启动（profile=%s）', name, profileDir)
 }

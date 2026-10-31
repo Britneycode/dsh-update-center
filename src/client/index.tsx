@@ -7,11 +7,11 @@
  *     PLATFORM_MODULES 静态表）。桌面端设置页用的就是同一批 Button / Pill /
  *     RiskConfirmation / Toast，因此桌面端改版时面板跟着变；
  *  2. 颜色只走 `--dsw-*` 语义令牌，跟随亮/暗主题；
- *  3. 不可逆操作（卸载、重启、dsh 本体更新/回退）走 `RiskConfirmation`
+ *  3. 不可逆操作（卸载、重启、批量更新、安装）走 `RiskConfirmation`
  *     模态 + 勾选确认，不再用 window.confirm；
  *  4. 排版沿用设置页标尺：页标题 16/24、行标题 14/20、行说明 12/18。
  *
- * 面板分两栏视图：已安装（含 dsh 本体与插件）与插件市场。市场数据来自
+ * 面板分两栏视图：已安装插件与插件市场。市场数据来自
  * awesome-dsh-plugin.com 清单（服务端白名单拉取，本地快照兜底）。
  */
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
@@ -80,7 +80,6 @@ const css = `
 .uc-market-head{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-bottom:12px}
 .uc-market-meta{color:var(--dsw-alias-label-tertiary);font-size:11px;line-height:18px;margin-top:8px}
 .uc-empty{padding:14px 0;color:var(--dsw-alias-label-tertiary);font-size:12px}
-.uc-warn{margin-top:12px;padding:10px 12px;border-radius:var(--dsw-radius-sm);background:var(--dsw-alias-bg-layer-3);color:var(--dsw-alias-label-secondary);font-size:12px;line-height:18px;white-space:pre-wrap}
 @media(max-width:680px){
   .uc-item{grid-template-columns:1fr}
   .uc-status,.uc-actions{justify-content:flex-start}
@@ -184,12 +183,7 @@ function mergeStatusAfterJob(fresh: any, checkData: any, updatedTargets: Set<str
     }
     return merged
   })
-  const repo = { ...(fresh?.repo ?? {}) }
-  const checkRepo = checkData?.repo ?? {}
-  if (checkRepo.git && typeof checkRepo.git.behind === 'number') {
-    repo.git = { ...(repo.git ?? {}), behind: checkRepo.git.behind }
-  }
-  return { ...fresh, repo, plugins }
+  return { ...fresh, plugins }
 }
 
 // ── 面板 ──
@@ -448,9 +442,7 @@ export function UpdateCenterPanel(): ReactNode {
   }, [say])
 
   const render = status
-  const repo = render?.repo ?? {}
   const plugins: any[] = Array.isArray(render?.plugins) ? render.plugins : []
-  const git = repo?.git ?? {}
   const jobRunning = render?.job?.status === 'queued' || render?.job?.status === 'running'
 
   const summaryText = jobRunning
@@ -510,17 +502,6 @@ export function UpdateCenterPanel(): ReactNode {
     )
   }
 
-  const repoBadge = (() => {
-    if (repo?.error) return badge('仓库不可用', 'err')
-    if (git.dirty) return badge('有未提交改动', 'warn')
-    if (checked && repo?.fetchOk === false) return badge('检查失败', 'err')
-    if (checked && git.behind > 0) return badge(`落后 ${git.behind} 个提交`, 'update')
-    if (checked && typeof git.behind === 'number') return badge('已是最新', 'ok')
-    return badge(checked ? '状态未知' : '未检查', 'muted')
-  })()
-
-  const canUpdate = checked && !repo?.error && !git.dirty && Number(git.behind) > 0
-
   return (
     <section className="uc">
       <div className="uc-head">
@@ -536,10 +517,10 @@ export function UpdateCenterPanel(): ReactNode {
             variant="primary"
             icon={<IconDownloadOutlineRegular size={16} />}
             disabled={busy || jobRunning}
-            title={jobRunning ? '有更新任务正在执行，请等待完成后再批量更新' : '先检查远端，再一键更新所有可更新的插件（不含 dsh 本体）'}
+            title={jobRunning ? '有更新任务正在执行，请等待完成后再批量更新' : '先检查远端，再一键更新所有可更新的插件'}
             onClick={() => askConfirm({
               title: '批量更新插件',
-              description: '将先自动检查远端更新，再把所有可更新的插件（不含 dsh 本体）排成一个后台批量任务串行执行，单个失败不影响其余。检查可能需要十几秒。任务完成后再重启 dsh web。',
+              description: '将先自动检查远端更新，再把所有可更新的插件排成一个后台批量任务串行执行，单个失败不影响其余。检查可能需要十几秒。任务完成后再重启 dsh web。',
               acknowledgeLabel: '我了解更新完成后仍需重启 dsh web',
               confirmLabel: '开始更新',
               run: () => { void runAction('/update-all', {}, '正在检查并创建批量更新任务，可能需要十几秒…', 300_000) },
@@ -568,68 +549,6 @@ export function UpdateCenterPanel(): ReactNode {
       <div className="uc-body">
         {tab === 'installed' ? (
           <>
-            {/* dsh 本体 */}
-            <section className="uc-section">
-              <div className="uc-section-head">
-                <h3 className="uc-section-title">dsh 本体</h3>
-                {repoBadge}
-              </div>
-              <div className="uc-repo-row uc-row">
-                <div className="uc-row-text">
-                  <div className="uc-row-title">{String(repo?.version || '未知版本')}</div>
-                  <div className="uc-row-desc">
-                    {[git.head, git.branch].filter(Boolean).join(' · ') || '—'}
-                  </div>
-                  {repo?.path ? <div className="uc-path" title={String(repo.path)}>{String(repo.path)}</div> : null}
-                  {Number(git.ahead) > 0 ? <div className="uc-row-desc">本地领先 {git.ahead}</div> : null}
-                  {git.dirty && Array.isArray(git.dirtyFiles) && git.dirtyFiles.length > 0 ? (
-                    <div className="uc-warn">{`为保护现有工作，更新已禁用：\n${git.dirtyFiles.join('\n')}`}</div>
-                  ) : null}
-                </div>
-                <div className="uc-row-action">
-                  <Button
-                    variant="primary"
-                    disabled={!canUpdate}
-                    onClick={() => askConfirm({
-                      title: '完整更新 dsh',
-                      description: '将在独立后台任务中拉取代码、安装依赖并重新构建 dsh。任务完成后需重启 dsh web。',
-                      acknowledgeLabel: '我了解更新完成后需要重启 dsh web',
-                      confirmLabel: '完整更新',
-                      run: () => { void runAction('/update-dsh', { full: true }, '正在创建后台更新任务…') },
-                    })}
-                  >
-                    完整更新
-                  </Button>
-                  <Button
-                    variant="outline"
-                    disabled={!canUpdate}
-                    onClick={() => askConfirm({
-                      title: '仅拉取 dsh 代码',
-                      description: '仅拉取代码不会安装依赖或重新构建，重启后仍可能运行旧产物。',
-                      acknowledgeLabel: '我了解未安装依赖与重新构建',
-                      confirmLabel: '仅拉取',
-                      run: () => { void runAction('/update-dsh', { full: false }, '正在创建后台更新任务…') },
-                    })}
-                  >
-                    仅拉取代码
-                  </Button>
-                  <Button
-                    variant="outline"
-                    disabled={!checked || !!repo?.error || !!git.dirty}
-                    onClick={() => askConfirm({
-                      title: '回退 dsh 到上一版',
-                      description: '会把 dsh 源码重置到上一次更新前的提交，并重新安装依赖、重新构建（需要工作区干净）。完成后需重启 dsh web。被回退的提交仍可用 git reflog 找回。',
-                      acknowledgeLabel: '我了解这会覆盖当前 dsh 源码',
-                      confirmLabel: '回退',
-                      run: () => { void runAction('/rollback-dsh', {}, '正在创建后台回退任务…') },
-                    })}
-                  >
-                    回退上一版
-                  </Button>
-                </div>
-              </div>
-            </section>
-
             {/* 插件 */}
             <section className="uc-section">
               <div className="uc-section-head">

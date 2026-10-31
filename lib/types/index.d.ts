@@ -20,18 +20,12 @@ import type { Context } from 'cordis';
 export declare const name = "dsh-update-center";
 export declare const inject: string[];
 export interface Config {
-    /** dsh 仓库目录（缺省自动探测）。 */
-    repoDir: string;
     /** profile 目录（缺省 $DSH_HOME/profiles/web）。 */
     profileDir: string;
     /** agent-preset 目录（缺省 $DSH_HOME/.agent-presets）。 */
     presetDir: string;
     /** 代理地址（npm/pnpm 用；git 复用仓库级 http.proxy）。 */
     proxy: string;
-    /** git 远端名。 */
-    remote: string;
-    /** git 分支名。 */
-    branch: string;
     /** 插件名 → GitHub 上游（owner/repo），用于展示项目来源。 */
     upstreams: Record<string, string>;
 }
