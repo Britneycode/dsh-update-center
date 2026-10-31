@@ -148,5 +148,20 @@
   "temp_clone_token": null,
   "network_count": 1,
   "subscribers_count": 0
+ },
+ {
+  "id": 1424034518,
+  "name": "dsh-dyou-wine",
+  "full_name": "DoveLi-Gu/dsh-dyou-wine",
+  "private": false,
+  "owner": {
+   "login": "DoveLi-Gu"
+  },
+  "html_url": "https://github.com/DoveLi-Gu/dsh-dyou-wine",
+  "description": "Fixed-rhythm page bounce, a flying whale-girl pet with wall rebounds, and local BGM playback for DeepSeek Harness Web.",
+  "descriptionZh": "让 DSH 界面和鲸鱼娘玩偶按固定节奏 Q 弹，玩偶满屏飞行、碰墙反弹，并播放内置 BGM。",
+  "fork": false,
+  "stargazers_count": 0,
+  "pushed_at": "2026-10-18T10:27:41Z"
  }
 ]
